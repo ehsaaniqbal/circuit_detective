@@ -33,6 +33,7 @@ Notebook-first training entrypoint:
 
 - `notebooks/phase1_qwen35_2b_grpo.ipynb`
 - `scripts/phase1_train.py` (`--backend trl` is the current smoke path; Unsloth needs a compatible TRL pin)
+- `scripts/phase1_sft.py` (optional tiny warm-start for the Phase 1 tool protocol)
 - `scripts/hf_phase1_job.py`
 
 Execution plan:

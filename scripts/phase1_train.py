@@ -30,6 +30,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--learning-rate", type=float, default=8e-6)
     parser.add_argument("--lora-rank", type=int, default=8)
     parser.add_argument(
+        "--adapter-path",
+        default=None,
+        help="Optional PEFT adapter directory to continue training from.",
+    )
+    parser.add_argument(
         "--log-completions",
         action=argparse.BooleanOptionalAction,
         default=False,
@@ -241,6 +246,7 @@ def main() -> None:
     else:
         import torch
         from peft import LoraConfig
+        from peft import PeftModel
         from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
         tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
@@ -278,6 +284,13 @@ def main() -> None:
                 "down_proj",
             ],
         )
+        if args.adapter_path:
+            model = PeftModel.from_pretrained(
+                model,
+                args.adapter_path,
+                is_trainable=True,
+            )
+            peft_config = None
         bf16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
 
     train_dataset = build_phase1_dataset(repeats_per_prompt=args.repeats_per_prompt)
@@ -316,7 +329,7 @@ def main() -> None:
         max_tool_calling_iterations=args.max_tool_calling_iterations,
     )
     trainer_kwargs = {}
-    if args.backend == "trl":
+    if args.backend == "trl" and peft_config is not None:
         trainer_kwargs["peft_config"] = peft_config
 
     trainer = GRPOTrainer(

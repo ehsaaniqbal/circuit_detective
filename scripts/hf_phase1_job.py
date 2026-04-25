@@ -29,6 +29,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-tool-calling-iterations", type=int, default=6)
     parser.add_argument("--learning-rate", type=float, default=8e-6)
     parser.add_argument("--log-completions", action="store_true")
+    parser.add_argument("--sft-warmup", action="store_true")
+    parser.add_argument("--sft-output-dir", default="outputs/phase1_sft_warmup")
+    parser.add_argument("--sft-max-steps", type=int, default=32)
+    parser.add_argument("--sft-examples-per-prompt", type=int, default=4)
+    parser.add_argument("--sft-learning-rate", type=float, default=2e-5)
+    parser.add_argument("--sft-target-head", default="L1H6")
     parser.add_argument("--backend", choices=["trl", "unsloth"], default="trl")
     parser.add_argument("--eval-before-after", action="store_true")
     parser.add_argument("--upload-artifacts", action="store_true")
@@ -76,6 +82,29 @@ def main() -> None:
         cwd=workdir,
     )
     artifact_dir = Path(args.artifact_dir)
+    adapter_args: list[str] = []
+    if args.sft_warmup:
+        if args.backend != "trl":
+            raise ValueError("--sft-warmup currently supports --backend trl only.")
+        run(
+            [
+                sys.executable,
+                "scripts/phase1_sft.py",
+                "--output-dir",
+                args.sft_output_dir,
+                "--max-steps",
+                str(args.sft_max_steps),
+                "--examples-per-prompt",
+                str(args.sft_examples_per_prompt),
+                "--learning-rate",
+                str(args.sft_learning_rate),
+                "--target-head",
+                args.sft_target_head,
+            ],
+            cwd=workdir,
+        )
+        adapter_args = ["--adapter-path", str(Path(args.sft_output_dir) / "final_adapter")]
+
     run(
         [
             sys.executable,
@@ -98,6 +127,7 @@ def main() -> None:
             str(args.max_tool_calling_iterations),
             "--learning-rate",
             str(args.learning_rate),
+            *adapter_args,
             "--output-dir",
             args.output_dir,
             "--artifact-dir",

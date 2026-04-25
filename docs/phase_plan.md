@@ -145,8 +145,12 @@ Not implemented yet:
 - Rule-checked hypothesis discipline.
 - MCP tool surface.
 - Ablation-faithfulness as a required terminal rubric.
-- Tiny SFT warm-start.
 - Curriculum sampling across multiple tasks.
+
+Implemented after initial GRPO-only runs:
+
+- Optional tiny SFT warm-start for the Phase 1 tool protocol.
+- The HF job launcher can run SFT and GRPO in one ephemeral job, avoiding a second model download.
 
 Recommended order:
 

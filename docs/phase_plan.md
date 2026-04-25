@@ -11,8 +11,8 @@ This is the working execution plan. It separates what is implemented from what i
 - Current trained task: find the dominant induction head and call `submit_circuit`.
 - Tool surface: direct Python methods exposed through TRL `environment_factory`.
 - OpenEnv surface: deterministic `reset`, `step`, and `state`.
-- Canonical evidence: SFT warm-start plus 150-step GRPO improved eval success from 12.5% to 56.2% on 32 rollouts.
-- Current gate status: Phase 1 PASS. A follow-up candidate run is configured to upload the final LoRA adapter automatically.
+- Canonical evidence: SFT warm-start plus 200-step GRPO improved eval success from 10.4% to 79.2% on 48 rollouts.
+- Current gate status: Phase 1 PASS. The canonical final LoRA adapter is uploaded at `ehsaaniqbal/circuit-detective-qwen35-2b-phase1-sft64-grpo200-lora`.
 
 ## Phase 1 - L1 Induction Pilot
 

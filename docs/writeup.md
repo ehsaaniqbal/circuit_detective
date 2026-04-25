@@ -31,23 +31,23 @@ Unsloth remains a plausible future optimization, but the current passing run use
 
 ## Result
 
-Canonical run: `ehsaaniqbal/69ecc704d70108f37acde716`.
+Canonical run: `ehsaaniqbal/69ecd77ad2c8bd8662bcdd0b`.
 
-The before metric is after SFT warm-start and before GRPO, not the raw base model.
+The before metric is after SFT warm-start and before GRPO, not the raw base model. The final LoRA adapter was uploaded to `ehsaaniqbal/circuit-detective-qwen35-2b-phase1-sft64-grpo200-lora`.
 
 | Metric | Before GRPO | After GRPO |
 | --- | ---: | ---: |
-| Success rate | 12.5% | 56.2% |
-| Submit rate | 12.5% | 59.4% |
-| Mean reward | 0.0888 | 0.8879 |
-| Mean F1 | 0.1250 | 0.5781 |
-| Eval rollouts | 32 | 32 |
+| Success rate | 10.4% | 79.2% |
+| Submit rate | 10.4% | 81.2% |
+| Mean reward | 0.0858 | 1.2072 |
+| Mean F1 | 0.1042 | 0.7917 |
+| Eval rollouts | 48 | 48 |
 
 The Phase 1 gate was `>=40%` success on at least `32` eval rollouts, so this run passes the de-risk milestone.
 
-![Phase 1 reward curve](../artifacts/phase1_sft_grpo_150_a10g_large/phase1_reward_curve.png)
+![Phase 1 reward curve](../artifacts/phase1_sft64_grpo200_a10g_large/phase1_reward_curve.png)
 
-![Phase 1 loss curve](../artifacts/phase1_sft_grpo_150_a10g_large/phase1_loss_curve.png)
+![Phase 1 loss curve](../artifacts/phase1_sft64_grpo200_a10g_large/phase1_loss_curve.png)
 
 ## What The Agent Learned
 
@@ -63,7 +63,7 @@ This is useful because the agent is not only producing a text answer; it is lear
 
 The current result is intentionally narrow. Ablation use is still low, so this is best described as successful Phase 1 circuit localization rather than a rich causal-investigation agent. The next level should require ablation for full reward and introduce decoy heads so score-ranking alone is insufficient.
 
-The final trained adapter from the first passing run was not uploaded before the ephemeral HF Job ended. The repository therefore freezes the evaluation evidence for that run, and subsequent candidate runs are configured to upload the final LoRA adapter automatically.
+The final trained adapter for the canonical Phase 1 run is public, so Phase 2 can continue from the frozen Phase 1 policy instead of starting from the base model.
 
 ## Next Steps
 

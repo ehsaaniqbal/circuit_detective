@@ -34,28 +34,28 @@ Phase 2 is implemented as an additive ablation-required curriculum mode. It keep
 
 ## Phase 1 Result
 
-Canonical run: `ehsaaniqbal/69ecc704d70108f37acde716` on HF Jobs `a10g-large`.
+Canonical run: `ehsaaniqbal/69ecd77ad2c8bd8662bcdd0b` on HF Jobs `a10g-large`.
 
-The current best agent uses a tiny SFT warm-start followed by TRL GRPO on `Qwen/Qwen3.5-2B`. The before metric below is after the SFT warm-start and before GRPO, not the raw base model.
+The current best agent uses a tiny SFT warm-start followed by TRL GRPO on `Qwen/Qwen3.5-2B`. The before metric below is after the SFT warm-start and before GRPO, not the raw base model. The final LoRA adapter is public at `ehsaaniqbal/circuit-detective-qwen35-2b-phase1-sft64-grpo200-lora`.
 
 | Metric | Before GRPO | After GRPO |
 | --- | ---: | ---: |
-| Success rate | 12.5% | 56.2% |
-| Submit rate | 12.5% | 59.4% |
-| Mean reward | 0.0888 | 0.8879 |
-| Mean F1 | 0.1250 | 0.5781 |
-| Eval rollouts | 32 | 32 |
+| Success rate | 10.4% | 79.2% |
+| Submit rate | 10.4% | 81.2% |
+| Mean reward | 0.0858 | 1.2072 |
+| Mean F1 | 0.1042 | 0.7917 |
+| Eval rollouts | 48 | 48 |
 
 Phase 1 gate: **PASS** (`>=40%` success on `>=32` eval rollouts).
 
-![Phase 1 reward curve](artifacts/phase1_sft_grpo_150_a10g_large/phase1_reward_curve.png)
+![Phase 1 reward curve](artifacts/phase1_sft64_grpo200_a10g_large/phase1_reward_curve.png)
 
-![Phase 1 loss curve](artifacts/phase1_sft_grpo_150_a10g_large/phase1_loss_curve.png)
+![Phase 1 loss curve](artifacts/phase1_sft64_grpo200_a10g_large/phase1_loss_curve.png)
 
 Run summary:
 
 ```bash
-uv run python scripts/analyze_phase1_run.py artifacts/phase1_sft_grpo_150_a10g_large
+uv run python scripts/analyze_phase1_run.py artifacts/phase1_sft64_grpo200_a10g_large
 ```
 
 ## Deliverables
@@ -64,7 +64,8 @@ uv run python scripts/analyze_phase1_run.py artifacts/phase1_sft_grpo_150_a10g_l
 - Training notebook: `notebooks/phase1_qwen35_2b_grpo.ipynb`
 - Training scripts: `scripts/phase1_sft.py`, `scripts/phase1_train.py`, `scripts/hf_phase1_job.py`
 - Phase plan: `docs/phase_plan.md`
-- Canonical training evidence: `artifacts/phase1_sft_grpo_150_a10g_large/`
+- Canonical training evidence: `artifacts/phase1_sft64_grpo200_a10g_large/`
+- Trained Phase 1 LoRA adapter: `ehsaaniqbal/circuit-detective-qwen35-2b-phase1-sft64-grpo200-lora`
 - Writeup: `docs/writeup.md`
 
 Notebook-first training entrypoint:

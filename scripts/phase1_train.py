@@ -23,6 +23,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-completion-length", type=int, default=384)
     parser.add_argument("--num-generations", type=int, default=4)
     parser.add_argument("--lora-rank", type=int, default=8)
+    parser.add_argument(
+        "--backend",
+        choices=["trl", "unsloth"],
+        default="trl",
+        help="Training backend. `trl` is the current smoke default; `unsloth` is optional.",
+    )
     return parser.parse_args()
 
 
@@ -95,36 +101,79 @@ def save_training_curves(log_history: list[dict[str, object]], artifact_dir: Pat
 def main() -> None:
     args = parse_args()
 
-    from unsloth import FastLanguageModel, PatchFastRL, is_bfloat16_supported
-
-    PatchFastRL("GRPO", FastLanguageModel)
-
     from trl import GRPOConfig, GRPOTrainer
 
-    model, tokenizer = FastLanguageModel.from_pretrained(
-        model_name=args.model,
-        max_seq_length=args.max_seq_length,
-        load_in_4bit=True,
-        fast_inference=False,
-        max_lora_rank=args.lora_rank,
-        gpu_memory_utilization=0.6,
-    )
-    model = FastLanguageModel.get_peft_model(
-        model,
-        r=args.lora_rank,
-        target_modules=[
-            "q_proj",
-            "k_proj",
-            "v_proj",
-            "o_proj",
-            "gate_proj",
-            "up_proj",
-            "down_proj",
-        ],
-        lora_alpha=args.lora_rank,
-        use_gradient_checkpointing="unsloth",
-        random_state=3407,
-    )
+    if args.backend == "unsloth":
+        from unsloth import FastLanguageModel, PatchFastRL, is_bfloat16_supported
+
+        PatchFastRL("GRPO", FastLanguageModel)
+
+        model, tokenizer = FastLanguageModel.from_pretrained(
+            model_name=args.model,
+            max_seq_length=args.max_seq_length,
+            load_in_4bit=True,
+            fast_inference=False,
+            max_lora_rank=args.lora_rank,
+            gpu_memory_utilization=0.6,
+        )
+        model = FastLanguageModel.get_peft_model(
+            model,
+            r=args.lora_rank,
+            target_modules=[
+                "q_proj",
+                "k_proj",
+                "v_proj",
+                "o_proj",
+                "gate_proj",
+                "up_proj",
+                "down_proj",
+            ],
+            lora_alpha=args.lora_rank,
+            use_gradient_checkpointing="unsloth",
+            random_state=3407,
+        )
+        bf16 = is_bfloat16_supported()
+    else:
+        import torch
+        from peft import LoraConfig
+        from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+
+        tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
+
+        quantization_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.bfloat16
+            if torch.cuda.is_available() and torch.cuda.is_bf16_supported()
+            else torch.float16,
+            bnb_4bit_use_double_quant=True,
+        )
+        model = AutoModelForCausalLM.from_pretrained(
+            args.model,
+            quantization_config=quantization_config,
+            device_map="auto",
+            trust_remote_code=True,
+        )
+        model.config.use_cache = False
+        peft_config = LoraConfig(
+            r=args.lora_rank,
+            lora_alpha=args.lora_rank,
+            lora_dropout=0.0,
+            bias="none",
+            task_type="CAUSAL_LM",
+            target_modules=[
+                "q_proj",
+                "k_proj",
+                "v_proj",
+                "o_proj",
+                "gate_proj",
+                "up_proj",
+                "down_proj",
+            ],
+        )
+        bf16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
 
     train_dataset = build_phase1_dataset(repeats_per_prompt=args.repeats_per_prompt)
     training_args = GRPOConfig(
@@ -137,8 +186,8 @@ def main() -> None:
         lr_scheduler_type="cosine",
         optim="paged_adamw_8bit",
         logging_steps=1,
-        bf16=is_bfloat16_supported(),
-        fp16=not is_bfloat16_supported(),
+        bf16=bf16,
+        fp16=not bf16,
         per_device_train_batch_size=1,
         gradient_accumulation_steps=1,
         num_generations=args.num_generations,
@@ -152,6 +201,10 @@ def main() -> None:
         chat_template_kwargs={"enable_thinking": False},
         use_vllm=False,
     )
+    trainer_kwargs = {}
+    if args.backend == "trl":
+        trainer_kwargs["peft_config"] = peft_config
+
     trainer = GRPOTrainer(
         model=model,
         processing_class=tokenizer,
@@ -159,6 +212,7 @@ def main() -> None:
         args=training_args,
         train_dataset=train_dataset,
         environment_factory=CircuitDetectiveToolEnv,
+        **trainer_kwargs,
     )
     trainer.train()
     trainer.save_model(f"{args.output_dir}/final_adapter")

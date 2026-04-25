@@ -32,7 +32,7 @@ The environment package is OpenEnv-valid and runnable locally with Gym-style `re
 Notebook-first training entrypoint:
 
 - `notebooks/phase1_qwen35_2b_grpo.ipynb`
-- `scripts/phase1_train.py`
+- `scripts/phase1_train.py` (`--backend trl` is the current smoke path; Unsloth needs a compatible TRL pin)
 - `scripts/hf_phase1_job.py`
 
 ## Local Development

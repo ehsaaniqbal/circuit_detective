@@ -20,6 +20,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--workdir", default="/tmp/circuit_detective")
     parser.add_argument("--max-steps", type=int, default=5)
     parser.add_argument("--repeats-per-prompt", type=int, default=1)
+    parser.add_argument("--backend", choices=["trl", "unsloth"], default="trl")
     return parser.parse_args()
 
 
@@ -68,6 +69,8 @@ def main() -> None:
             str(args.max_steps),
             "--repeats-per-prompt",
             str(args.repeats_per_prompt),
+            "--backend",
+            args.backend,
             "--output-dir",
             "outputs/hf_phase1_smoke",
             "--artifact-dir",

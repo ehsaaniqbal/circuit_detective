@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 
 from circuit_detective.phase1_grpo import (
@@ -125,6 +126,14 @@ def save_eval_metrics(
 
 def main() -> None:
     args = parse_args()
+    if args.eval_before_after and args.eval_generations != args.num_generations:
+        print(
+            "For TRL environment_factory evaluation, --eval-generations must match "
+            "--num-generations. Overriding eval generations to "
+            f"{args.num_generations}.",
+            flush=True,
+        )
+        args.eval_generations = args.num_generations
 
     from trl import GRPOConfig, GRPOTrainer
 
@@ -201,8 +210,12 @@ def main() -> None:
         bf16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
 
     train_dataset = build_phase1_dataset(repeats_per_prompt=args.repeats_per_prompt)
-    eval_dataset = build_phase1_dataset(repeats_per_prompt=1)
-    eval_dataset = eval_dataset.select(range(min(args.eval_prompts, len(eval_dataset))))
+    eval_count = max(args.eval_prompts, args.eval_generations)
+    eval_count = math.ceil(eval_count / args.eval_generations) * args.eval_generations
+    base_eval_dataset = build_phase1_dataset(repeats_per_prompt=1)
+    eval_repeats = math.ceil(eval_count / len(base_eval_dataset))
+    eval_dataset = build_phase1_dataset(repeats_per_prompt=eval_repeats)
+    eval_dataset = eval_dataset.select(range(eval_count))
     training_args = GRPOConfig(
         output_dir=args.output_dir,
         learning_rate=5e-6,

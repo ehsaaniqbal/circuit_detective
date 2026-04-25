@@ -20,7 +20,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--workdir", default="/tmp/circuit_detective")
     parser.add_argument("--max-steps", type=int, default=5)
     parser.add_argument("--repeats-per-prompt", type=int, default=1)
-    parser.add_argument("--eval-generations", type=int, default=2)
+    parser.add_argument("--eval-generations", type=int, default=4)
     parser.add_argument("--eval-prompts", type=int, default=2)
     parser.add_argument("--backend", choices=["trl", "unsloth"], default="trl")
     parser.add_argument("--eval-before-after", action="store_true")

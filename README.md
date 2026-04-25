@@ -35,6 +35,10 @@ Notebook-first training entrypoint:
 - `scripts/phase1_train.py` (`--backend trl` is the current smoke path; Unsloth needs a compatible TRL pin)
 - `scripts/hf_phase1_job.py`
 
+Execution plan:
+
+- `docs/phase_plan.md`
+
 ## Local Development
 
 ```bash

@@ -176,13 +176,13 @@ class CircuitDetectiveToolEnv:
         """
         return self._call("submit_circuit", {"heads": heads})
 
-    def close(self) -> None:
+    def _close(self) -> None:
         """Close any resources held by the wrapped environment."""
         self.env.close()
 
     def __del__(self) -> None:
         try:
-            self.close()
+            self._close()
         except Exception:
             pass
 

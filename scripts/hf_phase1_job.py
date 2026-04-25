@@ -20,7 +20,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--workdir", default="/tmp/circuit_detective")
     parser.add_argument("--max-steps", type=int, default=5)
     parser.add_argument("--repeats-per-prompt", type=int, default=1)
+    parser.add_argument("--eval-generations", type=int, default=2)
+    parser.add_argument("--eval-prompts", type=int, default=2)
     parser.add_argument("--backend", choices=["trl", "unsloth"], default="trl")
+    parser.add_argument("--eval-before-after", action="store_true")
     return parser.parse_args()
 
 
@@ -73,11 +76,16 @@ def main() -> None:
             str(args.repeats_per_prompt),
             "--backend",
             args.backend,
+            "--eval-generations",
+            str(args.eval_generations),
+            "--eval-prompts",
+            str(args.eval_prompts),
             "--output-dir",
             "outputs/hf_phase1_smoke",
             "--artifact-dir",
             "artifacts/hf_phase1_smoke",
-        ],
+        ]
+        + (["--eval-before-after"] if args.eval_before_after else []),
         cwd=workdir,
     )
 

@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
-
-import matplotlib.pyplot as plt
 
 from circuit_detective.phase1_grpo import (
     CircuitDetectiveToolEnv,
@@ -22,7 +21,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-seq-length", type=int, default=1024)
     parser.add_argument("--max-completion-length", type=int, default=384)
     parser.add_argument("--num-generations", type=int, default=4)
+    parser.add_argument("--eval-generations", type=int, default=4)
+    parser.add_argument("--eval-prompts", type=int, default=4)
     parser.add_argument("--lora-rank", type=int, default=8)
+    parser.add_argument(
+        "--eval-before-after",
+        action="store_true",
+        help="Run a small GRPO environment evaluation before and after training.",
+    )
     parser.add_argument(
         "--backend",
         choices=["trl", "unsloth"],
@@ -52,6 +58,8 @@ def save_curve(
     if not xs:
         available_keys = sorted({key for entry in log_history for key in entry})
         raise ValueError(f"No values found for {key!r}. Available keys: {available_keys}")
+
+    import matplotlib.pyplot as plt
 
     plt.figure(figsize=(6, 4))
     plt.plot(xs, ys)
@@ -95,6 +103,23 @@ def save_training_curves(log_history: list[dict[str, object]], artifact_dir: Pat
         key=reward_key,
         path=artifact_dir / "phase1_reward_curve.png",
         title=f"Phase 1 Reward ({reward_key})",
+    )
+
+
+def save_eval_metrics(
+    *,
+    before: dict[str, float] | None,
+    after: dict[str, float] | None,
+    artifact_dir: Path,
+) -> None:
+    artifact_dir.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "before": before,
+        "after": after,
+    }
+    (artifact_dir / "phase1_eval_metrics.json").write_text(
+        json.dumps(payload, indent=2, sort_keys=True),
+        encoding="utf-8",
     )
 
 
@@ -176,6 +201,8 @@ def main() -> None:
         bf16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
 
     train_dataset = build_phase1_dataset(repeats_per_prompt=args.repeats_per_prompt)
+    eval_dataset = build_phase1_dataset(repeats_per_prompt=1)
+    eval_dataset = eval_dataset.select(range(min(args.eval_prompts, len(eval_dataset))))
     training_args = GRPOConfig(
         output_dir=args.output_dir,
         learning_rate=5e-6,
@@ -189,8 +216,10 @@ def main() -> None:
         bf16=bf16,
         fp16=not bf16,
         per_device_train_batch_size=1,
+        per_device_eval_batch_size=args.eval_generations,
         gradient_accumulation_steps=1,
         num_generations=args.num_generations,
+        num_generations_eval=args.eval_generations,
         generation_batch_size=args.num_generations,
         max_completion_length=args.max_completion_length,
         max_steps=args.max_steps,
@@ -200,6 +229,7 @@ def main() -> None:
         log_completions=True,
         chat_template_kwargs={"enable_thinking": False},
         use_vllm=False,
+        max_tool_calling_iterations=4,
     )
     trainer_kwargs = {}
     if args.backend == "trl":
@@ -211,12 +241,30 @@ def main() -> None:
         reward_funcs=[reward_func],
         args=training_args,
         train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
         environment_factory=CircuitDetectiveToolEnv,
         **trainer_kwargs,
     )
+
+    before_metrics = None
+    if args.eval_before_after:
+        before_metrics = trainer.evaluate(metric_key_prefix="eval_before")
+
     trainer.train()
+
+    after_metrics = None
+    if args.eval_before_after:
+        after_metrics = trainer.evaluate(metric_key_prefix="eval_after")
+
     trainer.save_model(f"{args.output_dir}/final_adapter")
-    save_training_curves(trainer.state.log_history, Path(args.artifact_dir))
+    artifact_dir = Path(args.artifact_dir)
+    save_training_curves(trainer.state.log_history, artifact_dir)
+    if args.eval_before_after:
+        save_eval_metrics(
+            before=before_metrics,
+            after=after_metrics,
+            artifact_dir=artifact_dir,
+        )
 
 
 if __name__ == "__main__":

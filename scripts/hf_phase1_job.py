@@ -36,6 +36,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--sft-learning-rate", type=float, default=2e-5)
     parser.add_argument("--sft-target-head", default="L1H6")
     parser.add_argument("--backend", choices=["trl", "unsloth"], default="trl")
+    parser.add_argument(
+        "--scenario",
+        choices=["phase1", "phase2"],
+        default="phase1",
+        help="Training curriculum level to pass through to SFT/GRPO scripts.",
+    )
     parser.add_argument("--eval-before-after", action="store_true")
     parser.add_argument("--upload-artifacts", action="store_true")
     parser.add_argument("--artifact-repo-path", default="artifacts/hf_phase1_smoke")
@@ -115,6 +121,8 @@ def main() -> None:
                 str(args.sft_learning_rate),
                 "--target-head",
                 args.sft_target_head,
+                "--scenario",
+                args.scenario,
             ],
             cwd=workdir,
         )
@@ -142,6 +150,8 @@ def main() -> None:
             str(args.max_tool_calling_iterations),
             "--learning-rate",
             str(args.learning_rate),
+            "--scenario",
+            args.scenario,
             *adapter_args,
             "--output-dir",
             args.output_dir,

@@ -7,6 +7,7 @@ from pathlib import Path
 
 from circuit_detective.phase1_grpo import (
     CircuitDetectiveToolEnv,
+    Phase2CircuitDetectiveToolEnv,
     build_phase1_dataset,
     consume_reward_trace,
     reward_func,
@@ -29,6 +30,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-tool-calling-iterations", type=int, default=6)
     parser.add_argument("--learning-rate", type=float, default=8e-6)
     parser.add_argument("--lora-rank", type=int, default=8)
+    parser.add_argument(
+        "--scenario",
+        choices=["phase1", "phase2"],
+        default="phase1",
+        help="Training curriculum level. phase2 requires ablation before full credit.",
+    )
     parser.add_argument(
         "--adapter-path",
         default=None,
@@ -158,6 +165,9 @@ def summarize_reward_trace(
             f"{prefix}_probe_rate": 0.0,
             f"{prefix}_inspect_rate": 0.0,
             f"{prefix}_ablate_rate": 0.0,
+            f"{prefix}_ablate_submitted_rate": 0.0,
+            f"{prefix}_causal_success_rate": 0.0,
+            f"{prefix}_mean_ablation_faithfulness": 0.0,
         }
 
     count = float(len(records))
@@ -179,6 +189,9 @@ def summarize_reward_trace(
         f"{prefix}_probe_rate": rate("used_probe"),
         f"{prefix}_inspect_rate": rate("used_inspect"),
         f"{prefix}_ablate_rate": rate("used_ablate"),
+        f"{prefix}_ablate_submitted_rate": rate("ablate_submitted"),
+        f"{prefix}_causal_success_rate": rate("causal_success"),
+        f"{prefix}_mean_ablation_faithfulness": mean("ablation_faithfulness"),
     }
 
 
@@ -300,12 +313,21 @@ def main() -> None:
             peft_config = None
         bf16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
 
-    train_dataset = build_phase1_dataset(repeats_per_prompt=args.repeats_per_prompt)
+    train_dataset = build_phase1_dataset(
+        repeats_per_prompt=args.repeats_per_prompt,
+        scenario=args.scenario,
+    )
     eval_count = max(args.eval_prompts, args.eval_generations)
     eval_count = math.ceil(eval_count / args.eval_generations) * args.eval_generations
-    base_eval_dataset = build_phase1_dataset(repeats_per_prompt=1)
+    base_eval_dataset = build_phase1_dataset(
+        repeats_per_prompt=1,
+        scenario=args.scenario,
+    )
     eval_repeats = math.ceil(eval_count / len(base_eval_dataset))
-    eval_dataset = build_phase1_dataset(repeats_per_prompt=eval_repeats)
+    eval_dataset = build_phase1_dataset(
+        repeats_per_prompt=eval_repeats,
+        scenario=args.scenario,
+    )
     eval_dataset = eval_dataset.select(range(eval_count))
     training_args = GRPOConfig(
         output_dir=args.output_dir,
@@ -346,7 +368,9 @@ def main() -> None:
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
-        environment_factory=CircuitDetectiveToolEnv,
+        environment_factory=Phase2CircuitDetectiveToolEnv
+        if args.scenario == "phase2"
+        else CircuitDetectiveToolEnv,
         **trainer_kwargs,
     )
 

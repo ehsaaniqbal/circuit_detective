@@ -16,15 +16,29 @@ from .backend import CircuitBackend, Head, get_default_backend
 from .rewards import compute_submission_score
 
 
+PHASE2_SCENARIO_ID = "l2_ablation_required"
+CAUSAL_DELTA_THRESHOLD = 0.05
+
+
 class CircuitDetectiveEnvironment(Environment):
     """OpenEnv server implementation for the Phase 1 induction-localization task."""
 
     SUPPORTS_CONCURRENT_SESSIONS: bool = True
 
-    def __init__(self, backend: CircuitBackend | None = None) -> None:
+    def __init__(
+        self,
+        backend: CircuitBackend | None = None,
+        *,
+        require_ablation: bool = False,
+        causal_delta_threshold: float = CAUSAL_DELTA_THRESHOLD,
+    ) -> None:
         self._backend = backend or get_default_backend()
+        self._require_ablation = require_ablation
+        self._causal_delta_threshold = causal_delta_threshold
         self._state = State(episode_id=str(uuid4()), step_count=0)
         self._submitted_heads: list[str] = []
+        self._inspected_heads: set[str] = set()
+        self._ablation_deltas: dict[str, float] = {}
 
     @property
     def state(self) -> State:
@@ -37,16 +51,33 @@ class CircuitDetectiveEnvironment(Environment):
     def reset(self) -> CircuitDetectiveObservation:
         self._state = State(episode_id=str(uuid4()), step_count=0)
         self._submitted_heads = []
-        return self._make_observation(
-            summary=(
+        self._inspected_heads = set()
+        self._ablation_deltas = {}
+        if self._require_ablation:
+            summary = (
+                "Phase 2: localize the dominant induction head, causally verify it "
+                "with ablate_head, then submit_circuit. Correct submissions receive "
+                "full credit only when the submitted head was ablated and the "
+                "intervention produced a meaningful behavior drop."
+            )
+            goal = (
+                "Inspect the dominant induction head, ablate that candidate, "
+                "then submit the verified head as ['LxHy']."
+            )
+        else:
+            summary = (
                 "Phase 1: localize the dominant induction head in TransformerLens "
                 "attn-only-2l. Use list_tools, run_probe, inspect_induction_scores, "
                 "ablate_head, then submit_circuit. You must call submit_circuit for "
                 "the episode to receive a high score."
-            ),
+            )
+            goal = "Submit the dominant induction head as ['LxHy']."
+        return self._make_observation(
+            summary=summary,
             result={
                 "scenario": self._backend.scenario_id,
-                "goal": "Submit the dominant induction head as ['LxHy'].",
+                "goal": goal,
+                "requires_ablation": self._require_ablation,
             },
             reward=0.0,
             done=False,
@@ -140,6 +171,7 @@ class CircuitDetectiveEnvironment(Environment):
     ) -> CircuitDetectiveObservation:
         top_k = int(arguments.get("top_k", 8))
         scores = [item.to_dict() for item in self._backend.inspect_induction_scores(top_k=top_k)]
+        self._inspected_heads.update(str(item["head_id"]) for item in scores)
         return self._make_observation(
             summary=(
                 f"Returned the top {len(scores)} heads ranked by induction score. "
@@ -154,9 +186,17 @@ class CircuitDetectiveEnvironment(Environment):
         layer = int(arguments["layer"])
         head = int(arguments["head"])
         result = self._backend.ablate_head(Head(layer=layer, head=head))
+        payload = result.to_dict()
+        self._ablation_deltas[result.head.head_id] = result.behavior_delta
+        payload.update(
+            {
+                "causal_delta_threshold": self._causal_delta_threshold,
+                "causal_verified": result.behavior_delta >= self._causal_delta_threshold,
+            }
+        )
         return self._make_observation(
             summary=f"Ablated L{layer}H{head} and measured the behavior delta.",
-            result=result.to_dict(),
+            result=payload,
             reward=0.01,
             done=False,
         )
@@ -175,6 +215,8 @@ class CircuitDetectiveEnvironment(Environment):
             max_steps=self._backend.max_steps,
         )
         self._submitted_heads = sorted(submitted)
+        phase2 = self._phase2_score(submitted=submitted, f1=score.f1)
+        reward = score.total_reward if not self._require_ablation else phase2["total_reward"]
 
         return self._make_observation(
             summary=(
@@ -185,10 +227,45 @@ class CircuitDetectiveEnvironment(Environment):
             result={
                 "submitted_heads": sorted(submitted),
                 "score": score.to_dict(),
+                "phase2": phase2,
             },
-            reward=score.total_reward,
+            reward=reward,
             done=True,
         )
+
+    def _phase2_score(self, *, submitted: set[str], f1: float) -> dict[str, object]:
+        submitted_ablation_deltas = {
+            head_id: self._ablation_deltas[head_id]
+            for head_id in submitted
+            if head_id in self._ablation_deltas
+        }
+        max_delta = max(submitted_ablation_deltas.values(), default=0.0)
+        ablate_submitted = bool(submitted_ablation_deltas)
+        faithful_ablation = max_delta >= self._causal_delta_threshold
+        causal_success = f1 == 1.0 and ablate_submitted and faithful_ablation
+
+        if not self._require_ablation:
+            total_reward = 0.0
+        elif causal_success:
+            normalized_steps = min(self._state.step_count / self._backend.max_steps, 1.0)
+            total_reward = 1.0 - (0.1 * normalized_steps)
+        elif f1 > 0.0 and ablate_submitted:
+            total_reward = 0.45 * f1
+        elif f1 > 0.0:
+            total_reward = 0.30 * f1
+        else:
+            total_reward = -0.05
+
+        return {
+            "requires_ablation": self._require_ablation,
+            "ablate_submitted": ablate_submitted,
+            "submitted_ablation_deltas": submitted_ablation_deltas,
+            "ablation_faithfulness": max_delta,
+            "causal_delta_threshold": self._causal_delta_threshold,
+            "faithful_ablation": faithful_ablation,
+            "causal_success": causal_success,
+            "total_reward": total_reward,
+        }
 
     def _make_observation(
         self,
@@ -202,7 +279,7 @@ class CircuitDetectiveEnvironment(Environment):
         return CircuitDetectiveObservation(
             summary=summary,
             result=result,
-            scenario_id=self._backend.scenario_id,
+            scenario_id=PHASE2_SCENARIO_ID if self._require_ablation else self._backend.scenario_id,
             step_count=self._state.step_count,
             remaining_budget=remaining_budget,
             available_tools=[
@@ -214,5 +291,10 @@ class CircuitDetectiveEnvironment(Environment):
             ],
             reward=reward,
             done=done,
-            metadata={"submitted_heads": self._submitted_heads},
+            metadata={
+                "submitted_heads": self._submitted_heads,
+                "inspected_heads": sorted(self._inspected_heads),
+                "ablation_deltas": self._ablation_deltas,
+                "requires_ablation": self._require_ablation,
+            },
         )

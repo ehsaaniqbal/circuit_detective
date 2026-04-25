@@ -15,6 +15,9 @@ METRIC_NAMES = [
     "inspect_rate",
     "probe_rate",
     "ablate_rate",
+    "ablate_submitted_rate",
+    "causal_success_rate",
+    "mean_ablation_faithfulness",
     "rollouts",
 ]
 
@@ -149,20 +152,42 @@ def render_text(
         "",
     ]
     for summary in summaries:
-        lines.extend(
+        causal_line = ""
+        if any(
+            summary.after[metric] is not None
+            for metric in [
+                "ablate_submitted_rate",
+                "causal_success_rate",
+                "mean_ablation_faithfulness",
+            ]
+        ):
+            causal_line = (
+                f"  causal: ablate_submitted {format_pct(summary.after['ablate_submitted_rate'])}, "
+                f"causal_success {format_pct(summary.after['causal_success_rate'])}, "
+                f"mean_delta {format_float(summary.after['mean_ablation_faithfulness'])}"
+            )
+
+        lines_for_summary = [
+            summary.name,
+            f"  metrics: {summary.metrics_path}",
+            f"  success: {format_pct(summary.before['success_rate'])} -> {format_pct(summary.after['success_rate'])} ({format_pct(summary.deltas['success_rate'])})",
+            f"  submit:  {format_pct(summary.before['submit_rate'])} -> {format_pct(summary.after['submit_rate'])} ({format_pct(summary.deltas['submit_rate'])})",
+            f"  reward:  {format_float(summary.before['mean_reward'])} -> {format_float(summary.after['mean_reward'])} ({format_float(summary.deltas['mean_reward'])})",
+            f"  f1:      {format_float(summary.before['mean_f1'])} -> {format_float(summary.after['mean_f1'])} ({format_float(summary.deltas['mean_f1'])})",
+            f"  tools:   inspect {format_pct(summary.after['inspect_rate'])}, probe {format_pct(summary.after['probe_rate'])}, ablate {format_pct(summary.after['ablate_rate'])}",
+        ]
+        if causal_line:
+            lines_for_summary.append(causal_line)
+        lines_for_summary.extend(
             [
-                summary.name,
-                f"  metrics: {summary.metrics_path}",
-                f"  success: {format_pct(summary.before['success_rate'])} -> {format_pct(summary.after['success_rate'])} ({format_pct(summary.deltas['success_rate'])})",
-                f"  submit:  {format_pct(summary.before['submit_rate'])} -> {format_pct(summary.after['submit_rate'])} ({format_pct(summary.deltas['submit_rate'])})",
-                f"  reward:  {format_float(summary.before['mean_reward'])} -> {format_float(summary.after['mean_reward'])} ({format_float(summary.deltas['mean_reward'])})",
-                f"  f1:      {format_float(summary.before['mean_f1'])} -> {format_float(summary.after['mean_f1'])} ({format_float(summary.deltas['mean_f1'])})",
-                f"  tools:   inspect {format_pct(summary.after['inspect_rate'])}, probe {format_pct(summary.after['probe_rate'])}, ablate {format_pct(summary.after['ablate_rate'])}",
                 f"  rollouts: {format_float(summary.after['rollouts'])}",
                 f"  plots: loss={'yes' if summary.has_loss_curve else 'no'}, reward={'yes' if summary.has_reward_curve else 'no'}",
                 f"  gate: {'PASS' if summary.gate_passed else 'not yet'}",
                 "",
             ]
+        )
+        lines.extend(
+            lines_for_summary
         )
     return "\n".join(lines).rstrip() + "\n"
 

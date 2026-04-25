@@ -9,6 +9,13 @@ def make_env() -> CircuitDetectiveEnvironment:
     return CircuitDetectiveEnvironment(backend=FakeInductionBackend())
 
 
+def make_phase2_env() -> CircuitDetectiveEnvironment:
+    return CircuitDetectiveEnvironment(
+        backend=FakeInductionBackend(),
+        require_ablation=True,
+    )
+
+
 def test_reset_exposes_budget_and_tools() -> None:
     env = make_env()
     observation = env.reset()
@@ -41,6 +48,46 @@ def test_submit_exact_match_terminates_with_positive_reward() -> None:
     assert observation.done is True
     assert observation.reward > 0.8
     assert observation.result["score"]["f1"] == 1.0
+
+
+def test_phase2_correct_submit_without_ablation_is_partial_credit() -> None:
+    env = make_phase2_env()
+    observation = env.reset()
+
+    assert observation.scenario_id == "l2_ablation_required"
+    observation = env.step(
+        CircuitDetectiveAction(
+            tool_name="submit_circuit",
+            arguments={"heads": ["L1H3"]},
+        )
+    )
+
+    assert observation.done is True
+    assert observation.result["score"]["f1"] == 1.0
+    assert observation.result["phase2"]["causal_success"] is False
+    assert observation.reward < 0.5
+
+
+def test_phase2_correct_submit_after_ablation_gets_full_credit() -> None:
+    env = make_phase2_env()
+    env.reset()
+    env.step(
+        CircuitDetectiveAction(
+            tool_name="ablate_head",
+            arguments={"layer": 1, "head": 3},
+        )
+    )
+    observation = env.step(
+        CircuitDetectiveAction(
+            tool_name="submit_circuit",
+            arguments={"heads": ["L1H3"]},
+        )
+    )
+
+    assert observation.done is True
+    assert observation.result["phase2"]["ablate_submitted"] is True
+    assert observation.result["phase2"]["causal_success"] is True
+    assert observation.reward > 0.8
 
 
 def test_invalid_tool_gets_penalized() -> None:

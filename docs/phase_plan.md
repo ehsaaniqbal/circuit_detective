@@ -4,11 +4,11 @@ This is the working execution plan. It separates what is implemented from what i
 
 ## Current Status
 
-- Implemented: Phase 1 only.
+- Implemented: Phase 1 trained; Phase 2 ablation-required mode implemented and locally smoke-tested.
 - Agent model: `Qwen/Qwen3.5-2B`.
 - Trainer path: HF TRL `GRPOTrainer` with PEFT/QLoRA and bitsandbytes.
 - Frozen target: TransformerLens `attn-only-2l`.
-- Current task: find the dominant induction head and call `submit_circuit`.
+- Current trained task: find the dominant induction head and call `submit_circuit`.
 - Tool surface: direct Python methods exposed through TRL `environment_factory`.
 - OpenEnv surface: deterministic `reset`, `step`, and `state`.
 - Canonical evidence: SFT warm-start plus 150-step GRPO improved eval success from 12.5% to 56.2% on 32 rollouts.
@@ -57,12 +57,14 @@ If Phase 1 stalls:
 
 Goal: make the task more mechanistic, not just score-ranking.
 
+Implementation status: added as an explicit training/eval mode. Phase 1 defaults are unchanged.
+
 Changes:
 
 - Require ablation before full terminal reward.
-- Add decoy heads where high induction score is not sufficient.
 - Reward causal validation via behavior drop after `ablate_head`.
-- Track `ablation_faithfulness`.
+- Track `causal_success_rate`, `ablate_submitted_rate`, and `ablation_faithfulness`.
+- Add decoy heads where high induction score is not sufficient. Not implemented yet.
 
 Exit gate:
 
@@ -134,18 +136,17 @@ Implemented now:
 - Trainer-side dense reward shaping for Phase 1.
 - Format/tool-surface discipline through explicit typed tool methods.
 - Rollout diagnostics: submit rate, success rate, F1, tool-use rates.
+- Phase 2 causal diagnostics: causal success, submitted-head ablation rate, ablation faithfulness.
 
 Partially implemented:
 
 - Rubric-style decomposition exists conceptually, but code is still a lean Phase 1 reward function rather than a full `RubricDict`.
-- Ablation is available as a tool and has shaped reward, but it is not yet required for full credit.
+- Ablation is available as a tool and is required for full credit in the explicit Phase 2 mode.
 
 Not implemented yet:
 
 - `<hypothesis>` / `<decision>` meta-reasoning tags.
 - Rule-checked hypothesis discipline.
-- MCP tool surface.
-- Ablation-faithfulness as a required terminal rubric.
 - Curriculum sampling across multiple tasks.
 
 Implemented after initial GRPO-only runs:

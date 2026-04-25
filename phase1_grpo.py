@@ -8,7 +8,10 @@ from typing import TYPE_CHECKING, Any
 
 from .models import CircuitDetectiveAction
 from .server.backend import CircuitBackend, get_default_backend
-from .server.circuit_detective_environment import CircuitDetectiveEnvironment
+from .server.circuit_detective_environment import (
+    CAUSAL_DELTA_THRESHOLD,
+    CircuitDetectiveEnvironment,
+)
 
 if TYPE_CHECKING:
     from datasets import Dataset
@@ -59,6 +62,50 @@ PHASE1_USER_PROMPT_VARIANTS = [
     ),
 ]
 
+PHASE2_SYSTEM_PROMPT = (
+    "You are a mechanistic-interpretability agent operating in a fixed toy "
+    "transformer environment. Phase 2 requires causal validation: first call "
+    "inspect_induction_scores(top_k=3), choose the strongest candidate head, "
+    "call ablate_head on that candidate, verify the behavior delta is positive, "
+    "then finish by calling submit_circuit with exactly that one head. Correct "
+    "submissions without ablation receive only partial credit."
+)
+
+PHASE2_USER_PROMPT_VARIANTS = [
+    (
+        "Find the dominant induction head and causally verify it before submitting. "
+        "Use ablate_head on your candidate."
+    ),
+    (
+        "Localize the top induction head, test it with an ablation intervention, "
+        "then submit the verified one-head circuit."
+    ),
+    (
+        "Solve the ablation-required circuit task: inspect scores, ablate the "
+        "candidate, confirm behavior drops, and submit one head."
+    ),
+    (
+        "Do not rely on score ranking alone. Inspect the toy transformer, ablate "
+        "the suspected induction head, then submit your final circuit."
+    ),
+    (
+        "Identify which attention head matters most for induction and verify it "
+        "causally with ablate_head before submit_circuit."
+    ),
+    (
+        "Use the tools to form and test a circuit hypothesis. Full credit requires "
+        "ablating the submitted head before final submission."
+    ),
+    (
+        "Investigate the frozen transformer, perform an intervention on the likely "
+        "head, and submit only after the ablation evidence supports it."
+    ),
+    (
+        "Phase 2 task: inspect, ablate, and submit the dominant induction head. "
+        "A correct answer without ablation is not enough."
+    ),
+]
+
 _REWARD_TRACE: list[dict[str, Any]] = []
 
 
@@ -74,8 +121,8 @@ def consume_reward_trace() -> list[dict[str, Any]]:
     return records
 
 
-def build_phase1_dataset(repeats_per_prompt: int = 16) -> "Dataset":
-    """Build the prompt-only training set used by the Phase 1 notebook."""
+def build_phase1_dataset(repeats_per_prompt: int = 16, *, scenario: str = "phase1") -> "Dataset":
+    """Build the prompt-only training set used by Phase 1/2 training."""
     try:
         from datasets import Dataset
     except ImportError as exc:  # pragma: no cover
@@ -87,11 +134,18 @@ def build_phase1_dataset(repeats_per_prompt: int = 16) -> "Dataset":
     prompts: list[list[dict[str, str]]] = []
     variant_ids: list[int] = []
 
-    for variant_id, user_prompt in enumerate(PHASE1_USER_PROMPT_VARIANTS):
+    if scenario == "phase2":
+        system_prompt = PHASE2_SYSTEM_PROMPT
+        user_prompts = PHASE2_USER_PROMPT_VARIANTS
+    else:
+        system_prompt = PHASE1_SYSTEM_PROMPT
+        user_prompts = PHASE1_USER_PROMPT_VARIANTS
+
+    for variant_id, user_prompt in enumerate(user_prompts):
         for _ in range(repeats_per_prompt):
             prompts.append(
                 [
-                    {"role": "system", "content": PHASE1_SYSTEM_PROMPT},
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ]
             )
@@ -119,9 +173,15 @@ class CircuitDetectiveToolEnv:
     def __init__(
         self,
         backend_factory: Callable[[], CircuitBackend] | None = None,
+        *,
+        require_ablation: bool = False,
     ) -> None:
         backend = backend_factory() if backend_factory is not None else get_default_backend()
-        self.env = CircuitDetectiveEnvironment(backend=backend)
+        self.env = CircuitDetectiveEnvironment(
+            backend=backend,
+            require_ablation=require_ablation,
+        )
+        self.require_ablation = require_ablation
         self.reward = 0.0
         self.cumulative_reward = 0.0
         self.last_step_reward = 0.0
@@ -130,6 +190,7 @@ class CircuitDetectiveToolEnv:
         self.tool_trace: list[dict[str, Any]] = []
         self._seen_tools: set[str] = set()
         self._ablated_heads: set[str] = set()
+        self._ablation_deltas: dict[str, float] = {}
         self._best_seen_head: str | None = None
 
     def reset(self, **_: Any) -> str | None:
@@ -141,6 +202,7 @@ class CircuitDetectiveToolEnv:
         self.tool_trace = []
         self._seen_tools = set()
         self._ablated_heads = set()
+        self._ablation_deltas = {}
         self._best_seen_head = None
         self.last_observation = self.env.reset()
         return self._render_observation(self.last_observation)
@@ -260,6 +322,19 @@ class CircuitDetectiveToolEnv:
                 submitted_heads = [str(item) for item in raw_heads]
 
         tools = [item["tool_name"] for item in self.tool_trace]
+        submitted_set = set(submitted_heads)
+        submitted_ablation_deltas = {
+            head_id: self._ablation_deltas[head_id]
+            for head_id in submitted_set
+            if head_id in self._ablation_deltas
+        }
+        max_submitted_delta = max(submitted_ablation_deltas.values(), default=0.0)
+        ablate_submitted = bool(submitted_ablation_deltas)
+        causal_success = (
+            terminal_score.get("f1", 0.0) == 1.0
+            and ablate_submitted
+            and max_submitted_delta >= CAUSAL_DELTA_THRESHOLD
+        )
         return {
             "reward": reward,
             "done": self.done,
@@ -272,7 +347,11 @@ class CircuitDetectiveToolEnv:
             "used_inspect": "inspect_induction_scores" in tools,
             "used_ablate": "ablate_head" in tools,
             "submitted_heads": submitted_heads,
+            "ablated_heads": sorted(self._ablated_heads),
             "best_seen_head": self._best_seen_head,
+            "ablate_submitted": ablate_submitted,
+            "ablation_faithfulness": max_submitted_delta,
+            "causal_success": causal_success,
         }
 
     def _trainer_step_reward(
@@ -325,6 +404,7 @@ class CircuitDetectiveToolEnv:
             return -0.01
 
         self._ablated_heads.add(head_id)
+        self._ablation_deltas[head_id] = float(observation.result.get("behavior_delta", 0.0))
         reward = 0.04
         ground_truth = set(self.env.ground_truth_heads())
         if head_id in ground_truth:
@@ -338,7 +418,22 @@ class CircuitDetectiveToolEnv:
         f1 = float(score.get("f1", 0.0)) if isinstance(score, dict) else 0.0
         if f1 <= 0.0:
             return env_reward + 0.03
+        if self.require_ablation:
+            return self._phase2_submit_reward(env_reward, observation)
         return env_reward + 0.25
+
+    def _phase2_submit_reward(self, env_reward: float, observation: Any) -> float:
+        submitted = set(str(item) for item in observation.result.get("submitted_heads", []))
+        submitted_deltas = [
+            self._ablation_deltas[head_id]
+            for head_id in submitted
+            if head_id in self._ablation_deltas
+        ]
+        if not submitted_deltas:
+            return env_reward - 0.05
+        if max(submitted_deltas) >= CAUSAL_DELTA_THRESHOLD:
+            return env_reward + 0.45
+        return env_reward + 0.10
 
     def _terminal_score(self) -> dict[str, float]:
         if self.last_observation is None or not self.done:
@@ -373,3 +468,16 @@ def reward_func(environments: list[CircuitDetectiveToolEnv], **_: Any) -> list[f
         rewards.append(reward)
         _REWARD_TRACE.append(env._training_summary(reward))
     return rewards
+
+
+class Phase2CircuitDetectiveToolEnv(CircuitDetectiveToolEnv):
+    """TRL tool wrapper for the ablation-required Phase 2 curriculum level."""
+
+    def __init__(
+        self,
+        backend_factory: Callable[[], CircuitBackend] | None = None,
+    ) -> None:
+        super().__init__(
+            backend_factory=backend_factory,
+            require_ablation=True,
+        )

@@ -3,12 +3,17 @@ from __future__ import annotations
 import json
 
 from circuit_detective.phase1_grpo import CircuitDetectiveToolEnv
+from circuit_detective.phase1_grpo import Phase2CircuitDetectiveToolEnv
 from circuit_detective.phase1_grpo import consume_reward_trace, reset_reward_trace, reward_func
 from circuit_detective.server.backend import FakeInductionBackend
 
 
 def make_env() -> CircuitDetectiveToolEnv:
     return CircuitDetectiveToolEnv(backend_factory=FakeInductionBackend)
+
+
+def make_phase2_env() -> Phase2CircuitDetectiveToolEnv:
+    return Phase2CircuitDetectiveToolEnv(backend_factory=FakeInductionBackend)
 
 
 def test_wrapper_reset_returns_json_observation() -> None:
@@ -120,3 +125,35 @@ def test_reward_func_rewards_correct_submission() -> None:
     assert rewards[0] > 1.0
     assert records[0]["submitted"] is True
     assert records[0]["correct"] is True
+
+
+def test_phase2_rewards_ablation_verified_submission_more_than_lookup_submission() -> None:
+    lookup_env = make_phase2_env()
+    lookup_env.reset()
+    lookup_env.inspect_induction_scores(top_k=3)
+    lookup_env.submit_circuit(["L1H3"])
+
+    causal_env = make_phase2_env()
+    causal_env.reset()
+    causal_env.inspect_induction_scores(top_k=3)
+    causal_env.ablate_head(layer=1, head=3)
+    causal_env.submit_circuit(["L1H3"])
+
+    assert causal_env.reward > lookup_env.reward
+
+
+def test_phase2_reward_func_records_causal_diagnostics() -> None:
+    reset_reward_trace()
+    env = make_phase2_env()
+    env.reset()
+
+    env.inspect_induction_scores(top_k=3)
+    env.ablate_head(layer=1, head=3)
+    env.submit_circuit(["L1H3"])
+    rewards = reward_func([env])
+    records = consume_reward_trace()
+
+    assert rewards[0] > 1.0
+    assert records[0]["causal_success"] is True
+    assert records[0]["ablate_submitted"] is True
+    assert records[0]["ablation_faithfulness"] > 0.0

@@ -67,6 +67,6 @@ The final trained adapter from the first passing run was not uploaded before the
 
 ## Next Steps
 
-The next engineering step is Phase 2: make the task require causal validation. The planned change is to keep inspection useful, but reserve full terminal reward for trajectories that inspect a candidate, ablate that candidate, observe the behavior drop, and only then submit.
+Phase 2 is now implemented as an additive ablation-required curriculum mode. It keeps the Phase 1 backend stable, but only gives full credit when the agent inspects a candidate, ablates that submitted head, observes a meaningful behavior drop, and then submits. The next training run is to continue from a frozen Phase 1 adapter and optimize `causal_success_rate`, not only raw success.
 
 Longer term, Circuit Detective can expand from toy induction to other verified circuit tasks, but the implementation should keep claims conservative and only include ground truth that has been checked against source material.

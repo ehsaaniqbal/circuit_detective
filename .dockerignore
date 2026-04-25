@@ -1,0 +1,14 @@
+.git
+.gitignore
+.venv
+.venv-tlens
+.venv-train
+.pytest_cache
+.ruff_cache
+__pycache__
+*.egg-info
+*.pyc
+.ipynb_checkpoints
+outputs
+checkpoints
+wandb

@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openenv-circuit-detective"
+version = "0.1.0"
+description = "Circuit Detective OpenEnv environment for mechanistic interpretability RL."
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "openenv-core[core]==0.2.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3,<9",
+]
+
+[project.scripts]
+server = "circuit_detective.server.app:main"
+
+[tool.setuptools]
+include-package-data = true
+packages = ["circuit_detective", "circuit_detective.server"]
+package-dir = { "circuit_detective" = ".", "circuit_detective.server" = "server" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

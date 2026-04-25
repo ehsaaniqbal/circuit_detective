@@ -1,0 +1,41 @@
+ARG BASE_IMAGE=ghcr.io/meta-pytorch/openenv-base:latest
+FROM ${BASE_IMAGE} AS builder
+
+WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl git && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY . /app/env
+WORKDIR /app/env
+
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    install -m 755 /root/.local/bin/uv /usr/local/bin/uv && \
+    install -m 755 /root/.local/bin/uvx /usr/local/bin/uvx && \
+    uv --version
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --no-editable
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv venv /app/env/.venv-tlens --python 3.11 && \
+    HF_HUB_DISABLE_XET=1 uv pip install --torch-backend cpu --python /app/env/.venv-tlens/bin/python transformer-lens==2.18.0
+
+FROM ${BASE_IMAGE}
+
+WORKDIR /app
+
+COPY --from=builder /app/env/.venv /app/.venv
+COPY --from=builder /app/env/.venv-tlens /app/env/.venv-tlens
+COPY --from=builder /app/env /app/env
+
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH="/app/env:$PYTHONPATH"
+ENV HF_HUB_DISABLE_XET=1
+ENV TOKENIZERS_PARALLELISM=false
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:7860/health || exit 1
+
+CMD ["sh", "-c", "cd /app/env && uvicorn server.app:app --host 0.0.0.0 --port 7860"]

@@ -22,11 +22,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", default="outputs/phase1_qwen35_2b_grpo")
     parser.add_argument("--artifact-dir", default="artifacts/phase1")
     parser.add_argument("--max-seq-length", type=int, default=1024)
-    parser.add_argument("--max-completion-length", type=int, default=384)
+    parser.add_argument("--max-completion-length", type=int, default=512)
     parser.add_argument("--num-generations", type=int, default=4)
     parser.add_argument("--eval-generations", type=int, default=4)
-    parser.add_argument("--eval-prompts", type=int, default=4)
+    parser.add_argument("--eval-prompts", type=int, default=2)
+    parser.add_argument("--max-tool-calling-iterations", type=int, default=6)
+    parser.add_argument("--learning-rate", type=float, default=8e-6)
     parser.add_argument("--lora-rank", type=int, default=8)
+    parser.add_argument(
+        "--log-completions",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Log full completion tables during training. Useful for debugging, noisy for longer runs.",
+    )
     parser.add_argument(
         "--eval-before-after",
         action="store_true",
@@ -281,7 +289,7 @@ def main() -> None:
     eval_dataset = eval_dataset.select(range(eval_count))
     training_args = GRPOConfig(
         output_dir=args.output_dir,
-        learning_rate=5e-6,
+        learning_rate=args.learning_rate,
         adam_beta1=0.9,
         adam_beta2=0.99,
         weight_decay=0.1,
@@ -302,10 +310,10 @@ def main() -> None:
         save_steps=max(args.max_steps // 2, 1),
         max_grad_norm=0.1,
         report_to="none",
-        log_completions=True,
+        log_completions=args.log_completions,
         chat_template_kwargs={"enable_thinking": False},
         use_vllm=False,
-        max_tool_calling_iterations=4,
+        max_tool_calling_iterations=args.max_tool_calling_iterations,
     )
     trainer_kwargs = {}
     if args.backend == "trl":

@@ -80,9 +80,31 @@ def test_reward_func_records_rollout_diagnostics() -> None:
     rewards = reward_func([env])
     records = consume_reward_trace()
 
-    assert rewards[0] > 0.0
+    assert rewards[0] == 0.0
     assert records[0]["used_inspect"] is True
     assert records[0]["submitted"] is False
+
+
+def test_reward_func_penalizes_probe_only_without_submission() -> None:
+    reset_reward_trace()
+    env = make_env()
+    env.reset()
+
+    env.run_probe()
+    rewards = reward_func([env])
+
+    assert rewards[0] < -0.3
+
+
+def test_reward_func_mildly_penalizes_wrong_submission() -> None:
+    reset_reward_trace()
+    env = make_env()
+    env.reset()
+
+    env.submit_circuit(["L0H0"])
+    rewards = reward_func([env])
+
+    assert -0.1 < rewards[0] < 0.1
 
 
 def test_reward_func_rewards_correct_submission() -> None:

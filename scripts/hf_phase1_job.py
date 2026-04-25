@@ -22,8 +22,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repeats-per-prompt", type=int, default=1)
     parser.add_argument("--output-dir", default="outputs/hf_phase1_smoke")
     parser.add_argument("--artifact-dir", default="artifacts/hf_phase1_smoke")
+    parser.add_argument("--max-completion-length", type=int, default=512)
+    parser.add_argument("--num-generations", type=int, default=4)
     parser.add_argument("--eval-generations", type=int, default=4)
     parser.add_argument("--eval-prompts", type=int, default=2)
+    parser.add_argument("--max-tool-calling-iterations", type=int, default=6)
+    parser.add_argument("--learning-rate", type=float, default=8e-6)
+    parser.add_argument("--log-completions", action="store_true")
     parser.add_argument("--backend", choices=["trl", "unsloth"], default="trl")
     parser.add_argument("--eval-before-after", action="store_true")
     parser.add_argument("--upload-artifacts", action="store_true")
@@ -81,16 +86,25 @@ def main() -> None:
             str(args.repeats_per_prompt),
             "--backend",
             args.backend,
+            "--max-completion-length",
+            str(args.max_completion_length),
+            "--num-generations",
+            str(args.num_generations),
             "--eval-generations",
             str(args.eval_generations),
             "--eval-prompts",
             str(args.eval_prompts),
+            "--max-tool-calling-iterations",
+            str(args.max_tool_calling_iterations),
+            "--learning-rate",
+            str(args.learning_rate),
             "--output-dir",
             args.output_dir,
             "--artifact-dir",
             str(artifact_dir),
         ]
-        + (["--eval-before-after"] if args.eval_before_after else []),
+        + (["--eval-before-after"] if args.eval_before_after else [])
+        + (["--log-completions"] if args.log_completions else []),
         cwd=workdir,
     )
     if args.upload_artifacts:

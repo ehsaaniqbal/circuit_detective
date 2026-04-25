@@ -18,8 +18,10 @@ if TYPE_CHECKING:
 PHASE1_SYSTEM_PROMPT = (
     "You are a mechanistic-interpretability agent operating in a fixed toy "
     "transformer environment. Use the available tools to identify the dominant "
-    "induction head. Explore efficiently, then finish by calling submit_circuit "
-    "with your best head list."
+    "induction head. Preferred plan: call inspect_induction_scores(top_k=3), "
+    "use the top-ranked head as your candidate, optionally ablate it if useful, "
+    "then finish by calling submit_circuit with exactly one head. Do not end the "
+    "rollout without submit_circuit; incomplete rollouts score poorly."
 )
 
 PHASE1_USER_PROMPT_VARIANTS = [
@@ -243,9 +245,9 @@ class CircuitDetectiveToolEnv:
         """Return the scalar reward consumed by GRPO for the completed rollout."""
         reward = self.cumulative_reward
         if not self.done:
-            reward -= 0.10
+            reward -= 0.35
             if not self.tool_trace:
-                reward -= 0.10
+                reward -= 0.15
         return max(min(reward, 1.5), -1.0)
 
     def _training_summary(self, reward: float) -> dict[str, Any]:
@@ -284,26 +286,26 @@ class CircuitDetectiveToolEnv:
             return env_reward
 
         if tool_name == "list_tools":
-            return self._first_use_reward(tool_name, 0.02)
+            return self._first_use_reward(tool_name, 0.0)
         if tool_name == "run_probe":
-            return self._first_use_reward(tool_name, 0.04)
+            return self._first_use_reward(tool_name, 0.01)
         if tool_name == "inspect_induction_scores":
             return self._inspect_reward(observation)
         if tool_name == "ablate_head":
             return self._ablation_reward(arguments, observation)
         if tool_name == "submit_circuit":
-            return env_reward + 0.05
+            return self._submit_reward(env_reward, observation)
         return 0.0
 
     def _first_use_reward(self, tool_name: str, reward: float) -> float:
         if tool_name in self._seen_tools:
-            return -0.01
+            return -0.02
         self._seen_tools.add(tool_name)
         return reward
 
     def _inspect_reward(self, observation: Any) -> float:
         is_first_inspect = "inspect_induction_scores" not in self._seen_tools
-        reward = self._first_use_reward("inspect_induction_scores", 0.12)
+        reward = self._first_use_reward("inspect_induction_scores", 0.25)
         scores = observation.result.get("scores", [])
         if not isinstance(scores, list) or not scores:
             return reward
@@ -312,7 +314,7 @@ class CircuitDetectiveToolEnv:
         self._best_seen_head = top_head
         ground_truth = set(self.env.ground_truth_heads())
         if is_first_inspect and top_head in ground_truth:
-            reward += 0.08
+            reward += 0.10
         return reward
 
     def _ablation_reward(self, arguments: dict[str, Any], observation: Any) -> float:
@@ -323,13 +325,20 @@ class CircuitDetectiveToolEnv:
             return -0.01
 
         self._ablated_heads.add(head_id)
-        reward = 0.06
+        reward = 0.04
         ground_truth = set(self.env.ground_truth_heads())
         if head_id in ground_truth:
-            reward += 0.14
+            reward += 0.16
         elif float(observation.result.get("behavior_delta", 0.0)) > 0.0:
-            reward += 0.02
+            reward += 0.03
         return reward
+
+    def _submit_reward(self, env_reward: float, observation: Any) -> float:
+        score = observation.result.get("score", {})
+        f1 = float(score.get("f1", 0.0)) if isinstance(score, dict) else 0.0
+        if f1 <= 0.0:
+            return env_reward + 0.03
+        return env_reward + 0.25
 
     def _terminal_score(self) -> dict[str, float]:
         if self.last_observation is None or not self.done:

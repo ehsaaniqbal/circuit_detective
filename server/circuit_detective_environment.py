@@ -41,7 +41,8 @@ class CircuitDetectiveEnvironment(Environment):
             summary=(
                 "Phase 1: localize the dominant induction head in TransformerLens "
                 "attn-only-2l. Use list_tools, run_probe, inspect_induction_scores, "
-                "ablate_head, then submit_circuit."
+                "ablate_head, then submit_circuit. You must call submit_circuit for "
+                "the episode to receive a high score."
             ),
             result={
                 "scenario": self._backend.scenario_id,
@@ -100,7 +101,10 @@ class CircuitDetectiveEnvironment(Environment):
                     {
                         "name": "inspect_induction_scores",
                         "arguments": {"top_k": "int, optional"},
-                        "description": "Return the top attention heads by induction score.",
+                        "description": (
+                            "Return the top attention heads by induction score; "
+                            "this is the main evidence for the final submission."
+                        ),
                     },
                     {
                         "name": "ablate_head",
@@ -110,7 +114,10 @@ class CircuitDetectiveEnvironment(Environment):
                     {
                         "name": "submit_circuit",
                         "arguments": {"heads": "list[str] like ['L1H3']"},
-                        "description": "Submit your candidate circuit and end the episode.",
+                        "description": (
+                            "Submit your candidate circuit and end the episode; "
+                            "required for high reward."
+                        ),
                     },
                 ]
             },
@@ -134,7 +141,10 @@ class CircuitDetectiveEnvironment(Environment):
         top_k = int(arguments.get("top_k", 8))
         scores = [item.to_dict() for item in self._backend.inspect_induction_scores(top_k=top_k)]
         return self._make_observation(
-            summary=f"Returned the top {len(scores)} heads ranked by induction score.",
+            summary=(
+                f"Returned the top {len(scores)} heads ranked by induction score. "
+                "Use the strongest supported head in submit_circuit before the budget ends."
+            ),
             result={"scores": scores},
             reward=0.01,
             done=False,

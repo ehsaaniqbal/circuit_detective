@@ -33,6 +33,7 @@ Notebook-first training entrypoint:
 
 - `notebooks/phase1_qwen35_2b_grpo.ipynb`
 - `scripts/phase1_train.py`
+- `scripts/hf_phase1_job.py`
 
 ## Local Development
 

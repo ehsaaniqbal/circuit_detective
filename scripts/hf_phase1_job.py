@@ -6,7 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from huggingface_hub import snapshot_download, upload_folder
+from huggingface_hub import create_repo, snapshot_download, upload_folder
 
 
 def run(command: list[str], *, cwd: Path | None = None) -> None:
@@ -39,6 +39,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--eval-before-after", action="store_true")
     parser.add_argument("--upload-artifacts", action="store_true")
     parser.add_argument("--artifact-repo-path", default="artifacts/hf_phase1_smoke")
+    parser.add_argument(
+        "--upload-adapter",
+        action="store_true",
+        help="Upload the final GRPO LoRA adapter to a Hugging Face model repo.",
+    )
+    parser.add_argument(
+        "--adapter-repo-id",
+        default=None,
+        help="Model repo id for --upload-adapter, for example user/model-name.",
+    )
+    parser.add_argument(
+        "--adapter-repo-path",
+        default="",
+        help="Optional folder path inside the adapter model repo.",
+    )
     return parser.parse_args()
 
 
@@ -146,6 +161,30 @@ def main() -> None:
             commit_message="Upload Phase 1 HF job artifacts",
         )
         print(f"uploaded_artifacts: {uploaded}", flush=True)
+
+    if args.upload_adapter:
+        if not args.adapter_repo_id:
+            raise ValueError("--upload-adapter requires --adapter-repo-id.")
+        adapter_dir = workdir / args.output_dir / "final_adapter"
+        if not adapter_dir.exists():
+            raise FileNotFoundError(f"Final adapter directory not found: {adapter_dir}")
+
+        create_repo(
+            repo_id=args.adapter_repo_id,
+            repo_type="model",
+            exist_ok=True,
+            private=False,
+        )
+        upload_kwargs = {
+            "repo_id": args.adapter_repo_id,
+            "repo_type": "model",
+            "folder_path": adapter_dir,
+            "commit_message": "Upload Phase 1 GRPO LoRA adapter",
+        }
+        if args.adapter_repo_path:
+            upload_kwargs["path_in_repo"] = args.adapter_repo_path
+        uploaded = upload_folder(**upload_kwargs)
+        print(f"uploaded_adapter: {uploaded}", flush=True)
 
 
 if __name__ == "__main__":

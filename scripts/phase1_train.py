@@ -8,7 +8,9 @@ from pathlib import Path
 from circuit_detective.phase1_grpo import (
     CircuitDetectiveToolEnv,
     build_phase1_dataset,
+    consume_reward_trace,
     reward_func,
+    reset_reward_trace,
 )
 
 
@@ -110,8 +112,8 @@ def save_training_curves(log_history: list[dict[str, object]], artifact_dir: Pat
 
 def save_eval_metrics(
     *,
-    before: dict[str, float] | None,
-    after: dict[str, float] | None,
+    before: dict[str, object] | None,
+    after: dict[str, object] | None,
     artifact_dir: Path,
 ) -> None:
     artifact_dir.mkdir(parents=True, exist_ok=True)
@@ -124,6 +126,65 @@ def save_eval_metrics(
         encoding="utf-8",
     )
     print(f"saved: {artifact_dir / 'phase1_eval_metrics.json'}", flush=True)
+
+
+def summarize_reward_trace(
+    records: list[dict[str, object]],
+    *,
+    prefix: str,
+) -> dict[str, float]:
+    if not records:
+        return {
+            f"{prefix}_rollouts": 0.0,
+            f"{prefix}_mean_reward": 0.0,
+            f"{prefix}_submit_rate": 0.0,
+            f"{prefix}_success_rate": 0.0,
+            f"{prefix}_mean_f1": 0.0,
+            f"{prefix}_mean_terminal_reward": 0.0,
+            f"{prefix}_mean_tool_calls": 0.0,
+            f"{prefix}_probe_rate": 0.0,
+            f"{prefix}_inspect_rate": 0.0,
+            f"{prefix}_ablate_rate": 0.0,
+        }
+
+    count = float(len(records))
+
+    def mean(key: str) -> float:
+        return sum(float(record.get(key, 0.0)) for record in records) / count
+
+    def rate(key: str) -> float:
+        return sum(1.0 for record in records if bool(record.get(key))) / count
+
+    return {
+        f"{prefix}_rollouts": count,
+        f"{prefix}_mean_reward": mean("reward"),
+        f"{prefix}_submit_rate": rate("submitted"),
+        f"{prefix}_success_rate": rate("correct"),
+        f"{prefix}_mean_f1": mean("f1"),
+        f"{prefix}_mean_terminal_reward": mean("terminal_reward"),
+        f"{prefix}_mean_tool_calls": mean("tool_calls"),
+        f"{prefix}_probe_rate": rate("used_probe"),
+        f"{prefix}_inspect_rate": rate("used_inspect"),
+        f"{prefix}_ablate_rate": rate("used_ablate"),
+    }
+
+
+def evaluate_with_rollout_metrics(
+    trainer: object,
+    *,
+    metric_key_prefix: str,
+) -> dict[str, object]:
+    reset_reward_trace()
+    metrics = trainer.evaluate(metric_key_prefix=metric_key_prefix)
+    rollout_records = consume_reward_trace()
+    metrics.update(
+        summarize_reward_trace(
+            rollout_records,
+            prefix=metric_key_prefix,
+        )
+    )
+    metrics[f"{metric_key_prefix}_sample_rollouts"] = rollout_records[:8]
+    return dict(metrics)
 
 
 def main() -> None:
@@ -263,14 +324,21 @@ def main() -> None:
 
     before_metrics = None
     if args.eval_before_after:
-        before_metrics = trainer.evaluate(metric_key_prefix="eval_before")
+        before_metrics = evaluate_with_rollout_metrics(
+            trainer,
+            metric_key_prefix="eval_before",
+        )
         print(json.dumps({"eval_before": before_metrics}, indent=2, sort_keys=True), flush=True)
 
+    reset_reward_trace()
     trainer.train()
 
     after_metrics = None
     if args.eval_before_after:
-        after_metrics = trainer.evaluate(metric_key_prefix="eval_after")
+        after_metrics = evaluate_with_rollout_metrics(
+            trainer,
+            metric_key_prefix="eval_after",
+        )
         print(json.dumps({"eval_after": after_metrics}, indent=2, sort_keys=True), flush=True)
 
     trainer.save_model(f"{args.output_dir}/final_adapter")

@@ -30,6 +30,10 @@ class CircuitDetectiveEnvironment(Environment):
     def state(self) -> State:
         return self._state
 
+    def ground_truth_heads(self) -> list[str]:
+        """Return the deterministic answer key for trainer-side diagnostics."""
+        return [head.head_id for head in self._backend.ground_truth_heads()]
+
     def reset(self) -> CircuitDetectiveObservation:
         self._state = State(episode_id=str(uuid4()), step_count=0)
         self._submitted_heads = []
@@ -153,7 +157,7 @@ class CircuitDetectiveEnvironment(Environment):
             raise ValueError("submit_circuit requires heads to be a list of strings.")
 
         submitted = {Head.parse(str(item)).head_id for item in raw_heads}
-        ground_truth = {head.head_id for head in self._backend.ground_truth_heads()}
+        ground_truth = set(self.ground_truth_heads())
         score = compute_submission_score(
             submitted=submitted,
             ground_truth=ground_truth,

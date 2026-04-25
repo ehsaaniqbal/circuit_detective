@@ -27,7 +27,7 @@ The current implementation is intentionally narrow: **Phase 1 only**. It targets
 - `ablate_head`
 - `submit_circuit`
 
-The environment package is OpenEnv-valid and runnable locally with Gym-style `reset`, `step`, and `state`. The training notebook and richer reward shaping will build on top of this Phase 1 server/client contract.
+The environment package is OpenEnv-valid and runnable locally with Gym-style `reset`, `step`, and `state`. The deployed OpenEnv reward remains deterministic; the TRL training wrapper adds shaped rollout rewards so Phase 1 GRPO receives nonzero signal during exploration.
 
 Notebook-first training entrypoint:
 
@@ -56,7 +56,7 @@ uv run python scripts/validator_smoke.py
 
 - One scenario: `l1_induction_attn_only_2l`
 - One dominant-head submission target derived deterministically from a fixed induction metric on the chosen checkpoint
-- Deterministic reward only
+- Deterministic OpenEnv reward, with trainer-side shaped rollout reward for Phase 1 GRPO
 - Split runtimes by necessity: `openenv-core` and `transformer-lens` currently have incompatible `beartype` constraints, so the live backend runs in a dedicated `.venv-tlens` sidecar process
 - Training wrapper uses explicit public Python tool methods for TRL `environment_factory`, while the deployed environment keeps the OpenEnv `reset` / `step` / `state` surface
 

@@ -35,6 +35,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--sft-examples-per-prompt", type=int, default=4)
     parser.add_argument("--sft-learning-rate", type=float, default=2e-5)
     parser.add_argument("--sft-target-head", default="L1H6")
+    parser.add_argument(
+        "--adapter-path",
+        default=None,
+        help=(
+            "Optional PEFT adapter path or Hub model id to continue GRPO from. "
+            "Ignored when --sft-warmup is set because the freshly trained SFT "
+            "adapter is used instead."
+        ),
+    )
     parser.add_argument("--backend", choices=["trl", "unsloth"], default="trl")
     parser.add_argument(
         "--scenario",
@@ -127,6 +136,8 @@ def main() -> None:
             cwd=workdir,
         )
         adapter_args = ["--adapter-path", str(Path(args.sft_output_dir) / "final_adapter")]
+    elif args.adapter_path:
+        adapter_args = ["--adapter-path", args.adapter_path]
 
     run(
         [

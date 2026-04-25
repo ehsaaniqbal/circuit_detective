@@ -11,7 +11,8 @@ This is the working execution plan. It separates what is implemented from what i
 - Current task: find the dominant induction head and call `submit_circuit`.
 - Tool surface: direct Python methods exposed through TRL `environment_factory`.
 - OpenEnv surface: deterministic `reset`, `step`, and `state`.
-- Evidence so far: 50-step tuned GRPO run improved eval success from 0.0 to 0.25 on 16 rollouts.
+- Canonical evidence: SFT warm-start plus 150-step GRPO improved eval success from 12.5% to 56.2% on 32 rollouts.
+- Current gate status: Phase 1 PASS. A follow-up candidate run is configured to upload the final LoRA adapter automatically.
 
 ## Phase 1 - L1 Induction Pilot
 
@@ -154,7 +155,7 @@ Implemented after initial GRPO-only runs:
 
 Recommended order:
 
-1. Finish Phase 1 GRPO gate.
-2. If submit behavior remains unstable, add tiny SFT warm-start.
-3. If Phase 1 is stable, add ablation-required reward as Phase 2.
-4. Add meta-reasoning tags only after the base tool protocol works, because tag enforcement adds another failure mode.
+1. Keep Phase 1 evidence and adapter-freezing runs reproducible.
+2. Start Phase 2 by requiring meaningful ablation before full reward.
+3. Add meta-reasoning tags only after the base tool protocol works, because tag enforcement adds another failure mode.
+4. Expand to harder circuits only after OpenEnv validation and submission packaging stay green.

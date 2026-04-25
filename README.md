@@ -63,7 +63,7 @@ uv run python scripts/analyze_phase1_run.py artifacts/phase1_sft_grpo_150_a10g_l
 - Training scripts: `scripts/phase1_sft.py`, `scripts/phase1_train.py`, `scripts/hf_phase1_job.py`
 - Phase plan: `docs/phase_plan.md`
 - Canonical training evidence: `artifacts/phase1_sft_grpo_150_a10g_large/`
-- Writeup/video/slides: pending final packaging
+- Writeup: `docs/writeup.md`
 
 Notebook-first training entrypoint:
 

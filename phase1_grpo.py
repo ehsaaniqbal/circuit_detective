@@ -239,7 +239,7 @@ class CircuitDetectiveToolEnv:
         )
         return self._render_observation(observation)
 
-    def final_reward(self) -> float:
+    def _final_reward(self) -> float:
         """Return the scalar reward consumed by GRPO for the completed rollout."""
         reward = self.cumulative_reward
         if not self.done:
@@ -248,7 +248,7 @@ class CircuitDetectiveToolEnv:
                 reward -= 0.10
         return max(min(reward, 1.5), -1.0)
 
-    def training_summary(self, reward: float) -> dict[str, Any]:
+    def _training_summary(self, reward: float) -> dict[str, Any]:
         """Summarize one rollout for evaluation diagnostics."""
         terminal_score = self._terminal_score()
         submitted_heads: list[str] = []
@@ -360,7 +360,7 @@ def reward_func(environments: list[CircuitDetectiveToolEnv], **_: Any) -> list[f
     """Return shaped Phase 1 rewards and record rollout diagnostics."""
     rewards: list[float] = []
     for env in environments:
-        reward = env.final_reward()
+        reward = env._final_reward()
         rewards.append(reward)
-        _REWARD_TRACE.append(env.training_summary(reward))
+        _REWARD_TRACE.append(env._training_summary(reward))
     return rewards

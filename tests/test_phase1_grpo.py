@@ -20,6 +20,25 @@ def test_wrapper_reset_returns_json_observation() -> None:
     assert payload["done"] is False
 
 
+def test_wrapper_public_methods_are_only_trl_surface() -> None:
+    env = make_env()
+
+    public_methods = {
+        name
+        for name in dir(env)
+        if not name.startswith("_") and callable(getattr(env, name))
+    }
+
+    assert public_methods == {
+        "ablate_head",
+        "inspect_induction_scores",
+        "list_tools",
+        "reset",
+        "run_probe",
+        "submit_circuit",
+    }
+
+
 def test_wrapper_shapes_useful_intermediate_rewards() -> None:
     env = make_env()
     env.reset()

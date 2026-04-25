@@ -70,6 +70,7 @@ def save_curve(
     plt.tight_layout()
     plt.savefig(path, dpi=160)
     plt.close()
+    print(f"saved: {path}", flush=True)
 
 
 def save_training_curves(log_history: list[dict[str, object]], artifact_dir: Path) -> None:
@@ -122,6 +123,7 @@ def save_eval_metrics(
         json.dumps(payload, indent=2, sort_keys=True),
         encoding="utf-8",
     )
+    print(f"saved: {artifact_dir / 'phase1_eval_metrics.json'}", flush=True)
 
 
 def main() -> None:
@@ -262,12 +264,14 @@ def main() -> None:
     before_metrics = None
     if args.eval_before_after:
         before_metrics = trainer.evaluate(metric_key_prefix="eval_before")
+        print(json.dumps({"eval_before": before_metrics}, indent=2, sort_keys=True), flush=True)
 
     trainer.train()
 
     after_metrics = None
     if args.eval_before_after:
         after_metrics = trainer.evaluate(metric_key_prefix="eval_after")
+        print(json.dumps({"eval_after": after_metrics}, indent=2, sort_keys=True), flush=True)
 
     trainer.save_model(f"{args.output_dir}/final_adapter")
     artifact_dir = Path(args.artifact_dir)

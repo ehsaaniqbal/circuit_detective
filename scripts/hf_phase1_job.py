@@ -6,7 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from huggingface_hub import snapshot_download
+from huggingface_hub import snapshot_download, upload_folder
 
 
 def run(command: list[str], *, cwd: Path | None = None) -> None:
@@ -24,6 +24,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--eval-prompts", type=int, default=2)
     parser.add_argument("--backend", choices=["trl", "unsloth"], default="trl")
     parser.add_argument("--eval-before-after", action="store_true")
+    parser.add_argument("--upload-artifacts", action="store_true")
+    parser.add_argument("--artifact-repo-path", default="artifacts/hf_phase1_smoke")
     return parser.parse_args()
 
 
@@ -66,6 +68,7 @@ def main() -> None:
         ],
         cwd=workdir,
     )
+    artifact_dir = Path("artifacts/hf_phase1_smoke")
     run(
         [
             sys.executable,
@@ -83,11 +86,20 @@ def main() -> None:
             "--output-dir",
             "outputs/hf_phase1_smoke",
             "--artifact-dir",
-            "artifacts/hf_phase1_smoke",
+            str(artifact_dir),
         ]
         + (["--eval-before-after"] if args.eval_before_after else []),
         cwd=workdir,
     )
+    if args.upload_artifacts:
+        uploaded = upload_folder(
+            repo_id=args.repo_id,
+            repo_type="space",
+            folder_path=workdir / artifact_dir,
+            path_in_repo=args.artifact_repo_path,
+            commit_message="Upload Phase 1 HF job artifacts",
+        )
+        print(f"uploaded_artifacts: {uploaded}", flush=True)
 
 
 if __name__ == "__main__":

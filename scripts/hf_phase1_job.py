@@ -55,6 +55,8 @@ def main() -> None:
             "uv",
             "pip",
             "install",
+            "--torch-backend",
+            "cpu",
             "--python",
             ".venv-tlens/bin/python",
             "transformer-lens==2.18.0",

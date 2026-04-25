@@ -1,0 +1,16 @@
+{
+  "after": {
+    "eval_after_loss": 0.0,
+    "eval_after_model_preparation_time": 0.0287,
+    "eval_after_runtime": 271.6532,
+    "eval_after_samples_per_second": 0.029,
+    "eval_after_steps_per_second": 0.007
+  },
+  "before": {
+    "eval_before_loss": 0.0,
+    "eval_before_model_preparation_time": 0.0287,
+    "eval_before_runtime": 324.2607,
+    "eval_before_samples_per_second": 0.025,
+    "eval_before_steps_per_second": 0.006
+  }
+}

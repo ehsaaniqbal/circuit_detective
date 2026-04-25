@@ -20,6 +20,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--workdir", default="/tmp/circuit_detective")
     parser.add_argument("--max-steps", type=int, default=5)
     parser.add_argument("--repeats-per-prompt", type=int, default=1)
+    parser.add_argument("--output-dir", default="outputs/hf_phase1_smoke")
+    parser.add_argument("--artifact-dir", default="artifacts/hf_phase1_smoke")
     parser.add_argument("--eval-generations", type=int, default=4)
     parser.add_argument("--eval-prompts", type=int, default=2)
     parser.add_argument("--backend", choices=["trl", "unsloth"], default="trl")
@@ -68,7 +70,7 @@ def main() -> None:
         ],
         cwd=workdir,
     )
-    artifact_dir = Path("artifacts/hf_phase1_smoke")
+    artifact_dir = Path(args.artifact_dir)
     run(
         [
             sys.executable,
@@ -84,7 +86,7 @@ def main() -> None:
             "--eval-prompts",
             str(args.eval_prompts),
             "--output-dir",
-            "outputs/hf_phase1_smoke",
+            args.output_dir,
             "--artifact-dir",
             str(artifact_dir),
         ]

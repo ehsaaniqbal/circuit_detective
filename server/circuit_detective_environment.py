@@ -250,11 +250,11 @@ class CircuitDetectiveEnvironment(Environment):
             normalized_steps = min(self._state.step_count / self._backend.max_steps, 1.0)
             total_reward = 1.0 - (0.1 * normalized_steps)
         elif f1 > 0.0 and ablate_submitted:
-            total_reward = 0.45 * f1
+            total_reward = 0.20 * f1
         elif f1 > 0.0:
-            total_reward = 0.30 * f1
+            total_reward = -0.35
         else:
-            total_reward = -0.05
+            total_reward = -0.10
 
         return {
             "requires_ablation": self._require_ablation,

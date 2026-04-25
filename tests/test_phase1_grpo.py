@@ -140,6 +140,7 @@ def test_phase2_rewards_ablation_verified_submission_more_than_lookup_submission
     causal_env.submit_circuit(["L1H3"])
 
     assert causal_env.reward > lookup_env.reward
+    assert lookup_env.reward < 0.0
 
 
 def test_phase2_reward_func_records_causal_diagnostics() -> None:

@@ -68,7 +68,8 @@ PHASE2_SYSTEM_PROMPT = (
     "inspect_induction_scores(top_k=3), choose the strongest candidate head, "
     "call ablate_head on that candidate, verify the behavior delta is positive, "
     "then finish by calling submit_circuit with exactly that one head. Correct "
-    "submissions without ablation receive only partial credit."
+    "submissions without ablation are penalized because Phase 2 is about causal "
+    "validation, not lookup."
 )
 
 PHASE2_USER_PROMPT_VARIANTS = [
@@ -361,7 +362,7 @@ class CircuitDetectiveToolEnv:
         observation: Any,
     ) -> float:
         env_reward = float(observation.reward or 0.0)
-        if env_reward < 0.0:
+        if env_reward < 0.0 and not (self.require_ablation and tool_name == "submit_circuit"):
             return env_reward
 
         if tool_name == "list_tools":
@@ -407,7 +408,11 @@ class CircuitDetectiveToolEnv:
         self._ablation_deltas[head_id] = float(observation.result.get("behavior_delta", 0.0))
         reward = 0.04
         ground_truth = set(self.env.ground_truth_heads())
-        if head_id in ground_truth:
+        if self.require_ablation and head_id == self._best_seen_head and head_id in ground_truth:
+            reward += 0.46
+        elif self.require_ablation and head_id in ground_truth:
+            reward += 0.36
+        elif head_id in ground_truth:
             reward += 0.16
         elif float(observation.result.get("behavior_delta", 0.0)) > 0.0:
             reward += 0.03
@@ -430,10 +435,10 @@ class CircuitDetectiveToolEnv:
             if head_id in self._ablation_deltas
         ]
         if not submitted_deltas:
-            return env_reward - 0.05
+            return -0.45
         if max(submitted_deltas) >= CAUSAL_DELTA_THRESHOLD:
             return env_reward + 0.45
-        return env_reward + 0.10
+        return 0.05
 
     def _terminal_score(self) -> dict[str, float]:
         if self.last_observation is None or not self.done:

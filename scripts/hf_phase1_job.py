@@ -40,8 +40,8 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help=(
             "Optional PEFT adapter path or Hub model id to continue GRPO from. "
-            "Ignored when --sft-warmup is set because the freshly trained SFT "
-            "adapter is used instead."
+            "When --sft-warmup is set, SFT first continues from this adapter and "
+            "GRPO then uses the freshly SFT-tuned adapter."
         ),
     )
     parser.add_argument("--backend", choices=["trl", "unsloth"], default="trl")
@@ -116,25 +116,25 @@ def main() -> None:
     if args.sft_warmup:
         if args.backend != "trl":
             raise ValueError("--sft-warmup currently supports --backend trl only.")
-        run(
-            [
-                sys.executable,
-                "scripts/phase1_sft.py",
-                "--output-dir",
-                args.sft_output_dir,
-                "--max-steps",
-                str(args.sft_max_steps),
-                "--examples-per-prompt",
-                str(args.sft_examples_per_prompt),
-                "--learning-rate",
-                str(args.sft_learning_rate),
-                "--target-head",
-                args.sft_target_head,
-                "--scenario",
-                args.scenario,
-            ],
-            cwd=workdir,
-        )
+        sft_command = [
+            sys.executable,
+            "scripts/phase1_sft.py",
+            "--output-dir",
+            args.sft_output_dir,
+            "--max-steps",
+            str(args.sft_max_steps),
+            "--examples-per-prompt",
+            str(args.sft_examples_per_prompt),
+            "--learning-rate",
+            str(args.sft_learning_rate),
+            "--target-head",
+            args.sft_target_head,
+            "--scenario",
+            args.scenario,
+        ]
+        if args.adapter_path:
+            sft_command.extend(["--adapter-path", args.adapter_path])
+        run(sft_command, cwd=workdir)
         adapter_args = ["--adapter-path", str(Path(args.sft_output_dir) / "final_adapter")]
     elif args.adapter_path:
         adapter_args = ["--adapter-path", args.adapter_path]

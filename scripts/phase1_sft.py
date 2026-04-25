@@ -25,6 +25,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--learning-rate", type=float, default=2e-5)
     parser.add_argument("--lora-rank", type=int, default=8)
     parser.add_argument(
+        "--adapter-path",
+        default=None,
+        help="Optional PEFT adapter path or Hub model id to continue SFT from.",
+    )
+    parser.add_argument(
         "--scenario",
         choices=["phase1", "phase2"],
         default="phase1",
@@ -227,7 +232,7 @@ def main() -> None:
 
     import torch
     from datasets import Dataset
-    from peft import LoraConfig
+    from peft import LoraConfig, PeftModel
     from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
     from trl import SFTConfig, SFTTrainer
 
@@ -271,22 +276,30 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    peft_config = LoraConfig(
-        r=args.lora_rank,
-        lora_alpha=args.lora_rank,
-        lora_dropout=0.0,
-        bias="none",
-        task_type="CAUSAL_LM",
-        target_modules=[
-            "q_proj",
-            "k_proj",
-            "v_proj",
-            "o_proj",
-            "gate_proj",
-            "up_proj",
-            "down_proj",
-        ],
-    )
+    peft_config = None
+    if args.adapter_path:
+        model = PeftModel.from_pretrained(
+            model,
+            args.adapter_path,
+            is_trainable=True,
+        )
+    else:
+        peft_config = LoraConfig(
+            r=args.lora_rank,
+            lora_alpha=args.lora_rank,
+            lora_dropout=0.0,
+            bias="none",
+            task_type="CAUSAL_LM",
+            target_modules=[
+                "q_proj",
+                "k_proj",
+                "v_proj",
+                "o_proj",
+                "gate_proj",
+                "up_proj",
+                "down_proj",
+            ],
+        )
     bf16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
     training_args = SFTConfig(
         output_dir=str(output_dir),

@@ -249,6 +249,13 @@ def main() -> None:
         from peft import PeftModel
         from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
+        if not torch.cuda.is_available():
+            raise RuntimeError(
+                "CUDA is not available. Phase 1 GRPO training requires a GPU "
+                "because it uses 4-bit QLoRA and bitsandbytes. Try a different "
+                "HF Jobs flavor or image; do not continue on CPU."
+            )
+
         tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token

@@ -1,0 +1,278 @@
+{
+  "after": {
+    "eval_after_ablate_rate": 0.0625,
+    "eval_after_inspect_rate": 1.0,
+    "eval_after_loss": -0.07602068036794662,
+    "eval_after_mean_f1": 0.578125,
+    "eval_after_mean_reward": 0.8879166666666667,
+    "eval_after_mean_terminal_reward": 0.5677083333333333,
+    "eval_after_mean_tool_calls": 2.34375,
+    "eval_after_model_preparation_time": 0.0224,
+    "eval_after_probe_rate": 0.375,
+    "eval_after_rollouts": 32.0,
+    "eval_after_runtime": 238.73,
+    "eval_after_sample_rollouts": [
+      {
+        "best_seen_head": "L1H6",
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.20000000000000007,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "best_seen_head": "L1H6",
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 1.5,
+        "submitted": true,
+        "submitted_heads": [
+          "L1H6"
+        ],
+        "terminal_reward": 0.9833333333333333,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "best_seen_head": "L1H6",
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.08000000000000002,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 3,
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": true
+      },
+      {
+        "best_seen_head": "L1H6",
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 1.5,
+        "submitted": true,
+        "submitted_heads": [
+          "L1H6"
+        ],
+        "terminal_reward": 0.975,
+        "tool_calls": 3,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": true
+      },
+      {
+        "best_seen_head": "L1H6",
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 1.5,
+        "submitted": true,
+        "submitted_heads": [
+          "L1H6"
+        ],
+        "terminal_reward": 0.9833333333333333,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "best_seen_head": "L1H6",
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 1.5,
+        "submitted": true,
+        "submitted_heads": [
+          "L1H6"
+        ],
+        "terminal_reward": 0.9833333333333333,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "best_seen_head": "L1H6",
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": -0.020000000000000018,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "best_seen_head": "L1H6",
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 1.5,
+        "submitted": true,
+        "submitted_heads": [
+          "L1H6"
+        ],
+        "terminal_reward": 0.9833333333333333,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      }
+    ],
+    "eval_after_samples_per_second": 0.034,
+    "eval_after_steps_per_second": 0.008,
+    "eval_after_submit_rate": 0.59375,
+    "eval_after_success_rate": 0.5625
+  },
+  "before": {
+    "eval_before_ablate_rate": 0.03125,
+    "eval_before_inspect_rate": 0.6875,
+    "eval_before_loss": 0.120145782828331,
+    "eval_before_mean_f1": 0.125,
+    "eval_before_mean_reward": 0.08875000000000001,
+    "eval_before_mean_terminal_reward": 0.12291666666666666,
+    "eval_before_mean_tool_calls": 2.15625,
+    "eval_before_model_preparation_time": 0.0224,
+    "eval_before_probe_rate": 0.5,
+    "eval_before_rollouts": 32.0,
+    "eval_before_runtime": 293.7624,
+    "eval_before_sample_rollouts": [
+      {
+        "best_seen_head": "L1H6",
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 1.5,
+        "submitted": true,
+        "submitted_heads": [
+          "L1H6"
+        ],
+        "terminal_reward": 0.9833333333333333,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "best_seen_head": "L1H6",
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.0,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "best_seen_head": "L1H6",
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.0,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "best_seen_head": "L1H6",
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 1.5,
+        "submitted": true,
+        "submitted_heads": [
+          "L1H6"
+        ],
+        "terminal_reward": 0.9833333333333333,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "best_seen_head": "L1H6",
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.0,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "best_seen_head": "L1H6",
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.0,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "best_seen_head": "L1H6",
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.0,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "best_seen_head": null,
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": -0.33999999999999997,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": false,
+        "used_probe": true
+      }
+    ],
+    "eval_before_samples_per_second": 0.027,
+    "eval_before_steps_per_second": 0.007,
+    "eval_before_submit_rate": 0.125,
+    "eval_before_success_rate": 0.125
+  }
+}

@@ -17,7 +17,8 @@ tags:
 
 Circuit Detective is an OpenEnv environment for training an agent to localize circuits in frozen transformers.
 
-Public Space target: https://huggingface.co/spaces/ehsaaniqbal/circuit-detective
+Public Space: https://huggingface.co/spaces/ehsaaniqbal/circuit-detective
+GitHub repo: https://github.com/ehsaaniqbal/circuit_detective
 
 The current implementation is intentionally narrow: **Phase 1 only**. It targets induction localization in TransformerLens' `attn-only-2l` toy model and exposes a small, deterministic tool surface:
 
@@ -28,6 +29,41 @@ The current implementation is intentionally narrow: **Phase 1 only**. It targets
 - `submit_circuit`
 
 The environment package is OpenEnv-valid and runnable locally with Gym-style `reset`, `step`, and `state`. The deployed OpenEnv reward remains deterministic; the TRL training wrapper adds shaped rollout rewards so Phase 1 GRPO receives nonzero signal during exploration.
+
+## Phase 1 Result
+
+Canonical run: `ehsaaniqbal/69ecc704d70108f37acde716` on HF Jobs `a10g-large`.
+
+The current best agent uses a tiny SFT warm-start followed by TRL GRPO on `Qwen/Qwen3.5-2B`. The before metric below is after the SFT warm-start and before GRPO, not the raw base model.
+
+| Metric | Before GRPO | After GRPO |
+| --- | ---: | ---: |
+| Success rate | 12.5% | 56.2% |
+| Submit rate | 12.5% | 59.4% |
+| Mean reward | 0.0888 | 0.8879 |
+| Mean F1 | 0.1250 | 0.5781 |
+| Eval rollouts | 32 | 32 |
+
+Phase 1 gate: **PASS** (`>=40%` success on `>=32` eval rollouts).
+
+![Phase 1 reward curve](artifacts/phase1_sft_grpo_150_a10g_large/phase1_reward_curve.png)
+
+![Phase 1 loss curve](artifacts/phase1_sft_grpo_150_a10g_large/phase1_loss_curve.png)
+
+Run summary:
+
+```bash
+uv run python scripts/analyze_phase1_run.py artifacts/phase1_sft_grpo_150_a10g_large
+```
+
+## Deliverables
+
+- HF Space: https://huggingface.co/spaces/ehsaaniqbal/circuit-detective
+- Training notebook: `notebooks/phase1_qwen35_2b_grpo.ipynb`
+- Training scripts: `scripts/phase1_sft.py`, `scripts/phase1_train.py`, `scripts/hf_phase1_job.py`
+- Phase plan: `docs/phase_plan.md`
+- Canonical training evidence: `artifacts/phase1_sft_grpo_150_a10g_large/`
+- Writeup/video/slides: pending final packaging
 
 Notebook-first training entrypoint:
 

@@ -6,6 +6,7 @@ from circuit_detective.server.backend import (
     Head,
     PublishedIOICircuitBackend,
     RandomizedPlantedCircuitBackend,
+    RealIOITransformerLensBackend,
 )
 from circuit_detective.server.circuit_detective_environment import (
     CircuitDetectiveEnvironment,
@@ -209,6 +210,17 @@ def test_ioi_env_scores_multi_head_name_mover_submission() -> None:
     assert observation.done is True
     assert observation.result["score"]["f1"] == 1.0
     assert observation.result["phase2"]["causal_success"] is True
+
+
+def test_real_ioi_backend_is_isolated_transformerlens_scenario() -> None:
+    backend = RealIOITransformerLensBackend()
+
+    try:
+        assert backend.scenario_id == "ioi_gpt2_small_real"
+        assert backend.max_steps == 12
+        assert backend._client.worker_path.name == "ioi_worker.py"
+    finally:
+        backend.close()
 
 
 def test_invalid_tool_gets_penalized() -> None:

@@ -17,6 +17,7 @@ from typing import Protocol
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TLENS_PYTHON = ROOT / ".venv-tlens" / "bin" / "python"
 WORKER_PATH = ROOT / "server" / "tlens_worker.py"
+IOI_WORKER_PATH = ROOT / "server" / "ioi_worker.py"
 
 
 @dataclass(frozen=True, slots=True)
@@ -337,6 +338,40 @@ class PublishedIOICircuitBackend:
         return deltas
 
 
+class RealIOITransformerLensBackend:
+    """
+    Real GPT-2-small IOI backend served by a TransformerLens subprocess.
+
+    Unlike `PublishedIOICircuitBackend`, this backend runs actual forward passes
+    and zero-ablation interventions on GPT-2 small. It is intentionally separate
+    from the default OpenEnv backend because CPU IOI probes are expensive.
+    """
+
+    scenario_id = "ioi_gpt2_small_real"
+    max_steps = 12
+
+    def __init__(self, *, python_executable: Path | None = None) -> None:
+        self._client = TransformerLensSubprocessBackend(
+            python_executable=python_executable,
+            worker_path=IOI_WORKER_PATH,
+        )
+
+    def close(self) -> None:
+        self._client.close()
+
+    def run_probe(self) -> ProbeResult:
+        return self._client.run_probe()
+
+    def inspect_induction_scores(self, top_k: int = 8) -> list[HeadScore]:
+        return self._client.inspect_induction_scores(top_k=top_k)
+
+    def ablate_head(self, head: Head) -> AblationResult:
+        return self._client.ablate_head(head)
+
+    def ground_truth_heads(self) -> list[Head]:
+        return self._client.ground_truth_heads()
+
+
 class TransformerLensSubprocessBackend:
     """
     Phase 1 backend for induction localization on TransformerLens' attn-only-2l.
@@ -349,8 +384,14 @@ class TransformerLensSubprocessBackend:
     scenario_id = "l1_induction_attn_only_2l"
     max_steps = 12
 
-    def __init__(self, *, python_executable: Path | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        python_executable: Path | None = None,
+        worker_path: Path = WORKER_PATH,
+    ) -> None:
         self.python_executable = python_executable or DEFAULT_TLENS_PYTHON
+        self.worker_path = worker_path
         self._lock = RLock()
         self._process: subprocess.Popen[str] | None = None
         self._request_id = 0
@@ -445,10 +486,11 @@ class TransformerLensSubprocessBackend:
         env = os.environ.copy()
         env["PYTHONPATH"] = str(ROOT)
         env.setdefault("HF_HUB_DISABLE_XET", "1")
+        env.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
         env.setdefault("TOKENIZERS_PARALLELISM", "false")
 
         self._process = subprocess.Popen(
-            [str(self.python_executable), str(WORKER_PATH)],
+            [str(self.python_executable), str(self.worker_path)],
             cwd=ROOT,
             env=env,
             stdin=subprocess.PIPE,

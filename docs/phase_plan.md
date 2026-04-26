@@ -78,16 +78,17 @@ Goal: move from toy induction to a canonical published circuit.
 
 Changes:
 
-- Add GPT-2 small target backend.
-- Add IOI probe prompts.
-- Encode verified IOI ground-truth heads only after checking source material.
-- Expand submission schema if needed for multiple heads.
+- Implemented fast stretch arena: published IOI name-mover head set with deterministic scores.
+- In progress: real TransformerLens GPT-2-small backend with fixed IOI prompts, logit-diff metric, and real head ablation deltas.
+- Ground-truth scope is intentionally narrow: name-mover heads only, not the full IOI circuit.
+- Submission schema already supports multiple heads.
 
 Exit gate:
 
 - OpenEnv smoke still passes.
 - Agent achieves nonzero improvement over base model.
-- README claims remain conservative if performance is partial.
+- Real IOI smoke returns a nonzero baseline logit-diff and per-head ablation deltas.
+- README claims remain conservative if performance is partial or if only the fast arena is trained.
 
 ## Phase 4 - Held-Out Generalization
 

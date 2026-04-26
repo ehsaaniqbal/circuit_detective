@@ -19,9 +19,11 @@ from .rewards import compute_submission_score
 PHASE2_SCENARIO_ID = "l2_ablation_required"
 PLANTED_SCENARIO_ID = "planted_circuit_arena"
 IOI_SCENARIO_ID = "ioi_gpt2_small_name_mover"
+REAL_IOI_SCENARIO_ID = "ioi_gpt2_small_real"
 CAUSAL_DELTA_THRESHOLD = 1e-5
 PLANTED_CAUSAL_DELTA_THRESHOLD = 0.10
 IOI_CAUSAL_DELTA_THRESHOLD = 0.10
+REAL_IOI_CAUSAL_DELTA_THRESHOLD = 0.01
 
 
 class CircuitDetectiveEnvironment(Environment):
@@ -60,7 +62,17 @@ class CircuitDetectiveEnvironment(Environment):
         self._submitted_heads = []
         self._inspected_heads = set()
         self._ablation_deltas = {}
-        if self._backend.scenario_id == IOI_SCENARIO_ID:
+        if self._backend.scenario_id == REAL_IOI_SCENARIO_ID:
+            summary = (
+                "Real IOI GPT-2-small Arena: run TransformerLens probes on real "
+                "IOI prompts, inspect head ablation effects, then submit the "
+                "name-mover heads."
+            )
+            goal = (
+                "Use real logit-diff and ablation evidence from GPT-2 small. "
+                "Submit the IOI name-mover heads as ['LxHy', ...]."
+            )
+        elif self._backend.scenario_id == IOI_SCENARIO_ID:
             summary = (
                 "IOI Name-Mover Arena: identify the GPT-2-small name-mover heads "
                 "from a published IOI circuit target. Inspect candidate effects, "
@@ -199,12 +211,17 @@ class CircuitDetectiveEnvironment(Environment):
         scores = [item.to_dict() for item in self._backend.inspect_induction_scores(top_k=top_k)]
         self._inspected_heads.update(str(item["head_id"]) for item in scores)
         summary = (
+            f"Returned the top {len(scores)} real IOI candidate heads ranked by logit-diff ablation delta. "
+            "Use the largest positive deltas before submitting the multi-head circuit."
+            if self._backend.scenario_id == REAL_IOI_SCENARIO_ID
+            else (
             f"Returned the top {len(scores)} IOI candidate heads ranked by name-mover effect. "
             "Use ablation evidence before submitting the multi-head circuit."
             if self._backend.scenario_id == IOI_SCENARIO_ID
             else (
                 f"Returned the top {len(scores)} heads ranked by induction score. "
                 "Use the strongest supported head in submit_circuit before the budget ends."
+            )
             )
         )
         return self._make_observation(
@@ -336,6 +353,8 @@ class CircuitDetectiveEnvironment(Environment):
             return PLANTED_SCENARIO_ID
         if self._backend.scenario_id == IOI_SCENARIO_ID:
             return IOI_SCENARIO_ID
+        if self._backend.scenario_id == REAL_IOI_SCENARIO_ID:
+            return REAL_IOI_SCENARIO_ID
         if self._require_ablation:
             return PHASE2_SCENARIO_ID
         return self._backend.scenario_id

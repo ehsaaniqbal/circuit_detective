@@ -11,6 +11,7 @@ from .server.backend import (
     CircuitBackend,
     PublishedIOICircuitBackend,
     RandomizedPlantedCircuitBackend,
+    RealIOITransformerLensBackend,
     get_default_backend,
 )
 from .server.circuit_detective_environment import (
@@ -18,6 +19,7 @@ from .server.circuit_detective_environment import (
     CircuitDetectiveEnvironment,
     IOI_CAUSAL_DELTA_THRESHOLD,
     PLANTED_CAUSAL_DELTA_THRESHOLD,
+    REAL_IOI_CAUSAL_DELTA_THRESHOLD,
 )
 
 if TYPE_CHECKING:
@@ -671,6 +673,20 @@ class IOICircuitToolEnv(CircuitDetectiveToolEnv):
             backend_factory=backend_factory or PublishedIOICircuitBackend,
             require_ablation=True,
             causal_delta_threshold=IOI_CAUSAL_DELTA_THRESHOLD,
+        )
+
+
+class RealIOICircuitToolEnv(CircuitDetectiveToolEnv):
+    """TRL tool wrapper for real TransformerLens GPT-2-small IOI probes."""
+
+    def __init__(
+        self,
+        backend_factory: Callable[[], CircuitBackend] | None = None,
+    ) -> None:
+        super().__init__(
+            backend_factory=backend_factory or RealIOITransformerLensBackend,
+            require_ablation=True,
+            causal_delta_threshold=REAL_IOI_CAUSAL_DELTA_THRESHOLD,
         )
 
 

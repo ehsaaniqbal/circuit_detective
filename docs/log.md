@@ -26,7 +26,7 @@ References:
 
 - Design/plan: [`docs/phase_plan.md`](docs/phase_plan.md)
 - README result summary: [`README.md`](README.md)
-- Current writeup draft: [`docs/writeup.md`](docs/writeup.md)
+- Current writeup draft: [`BLOG.md`](../BLOG.md)
 - OpenEnv smoke validator: [`scripts/validator_smoke.py`](scripts/validator_smoke.py)
 - Training scripts: [`scripts/phase1_sft.py`](scripts/phase1_sft.py), [`scripts/phase1_train.py`](scripts/phase1_train.py), [`scripts/hf_phase1_job.py`](scripts/hf_phase1_job.py)
 
@@ -355,7 +355,7 @@ Core repo references:
 
 - [`README.md`](README.md)
 - [`docs/phase_plan.md`](docs/phase_plan.md)
-- [`docs/writeup.md`](docs/writeup.md)
+- [`BLOG.md`](../BLOG.md)
 - [`phase1_grpo.py`](phase1_grpo.py)
 - [`scripts/phase1_sft.py`](scripts/phase1_sft.py)
 - [`scripts/phase1_train.py`](scripts/phase1_train.py)

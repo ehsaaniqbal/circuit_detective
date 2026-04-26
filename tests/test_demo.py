@@ -11,8 +11,9 @@ def test_demo_root_serves_judge_ui() -> None:
     response = client.get("/")
 
     assert response.status_code == 200
-    assert "Correlation points at a decoy" in response.text
-    assert "Protocol Replay" in response.text
+    assert "A model can guess. A detective tests." in response.text
+    assert "Run causal agent" in response.text
+    assert "Run naive baseline" in response.text
 
 
 def test_demo_manual_protocol_reaches_causal_success() -> None:

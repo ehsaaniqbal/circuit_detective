@@ -331,118 +331,158 @@ DEMO_HTML = r"""<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Circuit Detective Demo</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,650&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 
     :root {
-      --ink: #17201b;
-      --muted: #637066;
-      --paper: #f6f0de;
-      --paper-strong: #fffaf0;
-      --line: #d7c9a7;
-      --accent: #b33f1f;
-      --accent-2: #0f6b68;
-      --good: #1f7a45;
-      --bad: #ad3227;
-      --shadow: 0 18px 45px rgba(45, 37, 16, 0.16);
+      --bg: #f8f7f2;
+      --card: #ffffff;
+      --ink: #151716;
+      --muted: #68706b;
+      --line: #e5e1d6;
+      --accent: #0d6b5f;
+      --accent-soft: #e2f2ef;
+      --warn: #9d4a22;
+      --warn-soft: #f5e8dd;
+      --good: #14733f;
+      --bad: #a33232;
+      --mono-bg: #111816;
+      --shadow: 0 18px 50px rgba(28, 31, 29, 0.08);
     }
 
     * { box-sizing: border-box; }
     body {
       margin: 0;
       color: var(--ink);
-      font-family: "Source Serif 4", Georgia, serif;
+      font-family: "IBM Plex Sans", "Helvetica Neue", sans-serif;
       background:
-        radial-gradient(circle at 12% 12%, rgba(179, 63, 31, 0.16), transparent 28rem),
-        radial-gradient(circle at 88% 8%, rgba(15, 107, 104, 0.16), transparent 30rem),
-        linear-gradient(135deg, #efe0bd 0%, #f7f0df 52%, #e8d7ad 100%);
+        linear-gradient(90deg, rgba(13, 107, 95, .08) 1px, transparent 1px),
+        linear-gradient(rgba(13, 107, 95, .06) 1px, transparent 1px),
+        var(--bg);
+      background-size: 44px 44px;
       min-height: 100vh;
     }
 
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background-image:
-        linear-gradient(rgba(23, 32, 27, 0.045) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(23, 32, 27, 0.035) 1px, transparent 1px);
-      background-size: 42px 42px;
-      mask-image: linear-gradient(to bottom, black, transparent 85%);
-    }
-
-    header, main { width: min(1180px, calc(100vw - 28px)); margin: 0 auto; }
-    header { padding: 34px 0 18px; }
+    header, main { width: min(1120px, calc(100vw - 32px)); margin: 0 auto; }
+    header { padding: 42px 0 18px; }
     .eyebrow {
       font-family: "IBM Plex Mono", monospace;
       font-size: 12px;
-      letter-spacing: .14em;
+      letter-spacing: .12em;
       text-transform: uppercase;
-      color: var(--accent-2);
+      color: var(--accent);
       font-weight: 600;
     }
     h1 {
-      font-family: "Fraunces", Georgia, serif;
-      font-size: clamp(42px, 6vw, 86px);
-      line-height: .91;
-      letter-spacing: -0.055em;
-      margin: 10px 0 14px;
-      max-width: 920px;
+      font-size: clamp(38px, 6vw, 76px);
+      line-height: .96;
+      letter-spacing: -0.07em;
+      margin: 12px 0 16px;
+      max-width: 820px;
     }
     .lede {
-      max-width: 830px;
-      font-size: 20px;
-      line-height: 1.45;
-      color: #334038;
+      max-width: 780px;
+      font-size: 19px;
+      line-height: 1.55;
+      color: #38403b;
+      margin: 0;
+    }
+    .plain-definition {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 22px 0 0;
+    }
+    .definition-card {
+      background: rgba(255, 255, 255, .78);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 12px 30px rgba(28, 31, 29, .04);
+    }
+    .definition-card strong { display: block; margin-bottom: 4px; }
+    .definition-card span { color: var(--muted); line-height: 1.42; }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
     }
     .grid {
       display: grid;
-      grid-template-columns: 1fr 1.35fr .9fr;
+      grid-template-columns: .95fr 1.35fr;
       gap: 16px;
       align-items: start;
-      padding: 18px 0 36px;
+      padding: 18px 0 38px;
     }
     .panel {
-      background: rgba(255, 250, 240, 0.87);
-      border: 1px solid rgba(113, 86, 34, 0.22);
-      border-radius: 24px;
+      background: rgba(255, 255, 255, .9);
+      border: 1px solid var(--line);
+      border-radius: 22px;
       box-shadow: var(--shadow);
       overflow: hidden;
-      backdrop-filter: blur(12px);
     }
-    .panel h2 {
+    .panel h2, .panel h3 {
       margin: 0;
-      font-family: "Fraunces", Georgia, serif;
-      font-size: 24px;
-      letter-spacing: -0.03em;
+      font-size: 22px;
+      letter-spacing: -0.045em;
     }
     .panel-head {
-      padding: 18px 20px 12px;
+      padding: 18px 20px 14px;
       border-bottom: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255, 252, 243, .96), rgba(246, 240, 222, .66));
+      background: #fbfaf6;
     }
     .panel-body { padding: 18px 20px 20px; }
-    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; }
     button {
       appearance: none;
-      border: 1px solid #9f8551;
-      background: #fff8e8;
+      border: 1px solid #c9cfc8;
+      background: white;
       color: var(--ink);
       border-radius: 999px;
-      padding: 9px 13px;
+      padding: 10px 14px;
       font-family: "IBM Plex Mono", monospace;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
     }
-    button:hover { transform: translateY(-1px); background: #fff1cf; border-color: var(--accent); }
+    button:hover { transform: translateY(-1px); background: var(--accent-soft); border-color: var(--accent); }
     button.primary { background: var(--accent); color: white; border-color: var(--accent); }
-    button.secondary { background: var(--accent-2); color: white; border-color: var(--accent-2); }
+    button.secondary { background: var(--ink); color: white; border-color: var(--ink); }
+    button.warn { background: var(--warn-soft); border-color: #d8b999; color: var(--warn); }
     button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
+    .story {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .story-step {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fbfaf6;
+    }
+    .story-step b {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: var(--ink);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+    }
+    .story-step strong { display: block; margin-bottom: 2px; }
+    .story-step span { color: var(--muted); line-height: 1.4; }
     table { width: 100%; border-collapse: collapse; font-family: "IBM Plex Mono", monospace; font-size: 13px; }
-    th { text-align: left; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
-    td, th { padding: 10px 6px; border-bottom: 1px solid rgba(215, 201, 167, .85); }
+    th { text-align: left; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+    td, th { padding: 10px 6px; border-bottom: 1px solid var(--line); }
     .chip {
       display: inline-flex;
       align-items: center;
@@ -451,17 +491,18 @@ DEMO_HTML = r"""<!doctype html>
       font-family: "IBM Plex Mono", monospace;
       font-size: 12px;
       font-weight: 600;
-      background: #efe1bf;
-      color: #3d321d;
+      background: #edf0ec;
+      color: #3d4641;
     }
-    .chip.good { background: #d8ebd2; color: var(--good); }
-    .chip.bad { background: #f1d5ce; color: var(--bad); }
+    .chip.good { background: #e0f1e6; color: var(--good); }
+    .chip.bad { background: #f3dfdf; color: var(--bad); }
+    .chip.warn { background: var(--warn-soft); color: var(--warn); }
     .transcript { display: grid; gap: 10px; }
     .event {
-      border: 1px solid rgba(107, 84, 41, .24);
-      background: rgba(255, 253, 247, .78);
+      border: 1px solid var(--line);
+      background: #fff;
       border-radius: 16px;
-      padding: 12px;
+      padding: 14px;
       animation: rise .28s ease both;
     }
     .event-title {
@@ -471,15 +512,29 @@ DEMO_HTML = r"""<!doctype html>
       font-family: "IBM Plex Mono", monospace;
       font-size: 12px;
       font-weight: 600;
-      color: var(--accent-2);
+      color: var(--accent);
       margin-bottom: 6px;
     }
-    .event p { margin: 0 0 8px; line-height: 1.35; }
+    .event p { margin: 0 0 10px; line-height: 1.45; color: #333b36; }
+    details {
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+    summary {
+      cursor: pointer;
+      color: var(--muted);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
     pre {
-      margin: 0;
+      margin: 10px 0 0;
       max-height: 170px;
       overflow: auto;
-      background: #18231d;
+      background: var(--mono-bg);
       color: #f2ecd9;
       border-radius: 12px;
       padding: 10px;
@@ -488,12 +543,13 @@ DEMO_HTML = r"""<!doctype html>
       line-height: 1.38;
       white-space: pre-wrap;
     }
-    .rubric { display: grid; gap: 10px; }
+    .side-stack { display: grid; gap: 16px; }
+    .rubric { display: grid; gap: 8px; }
     .rubric-row {
       display: flex;
       justify-content: space-between;
       gap: 12px;
-      border-bottom: 1px solid rgba(215, 201, 167, .8);
+      border-bottom: 1px solid var(--line);
       padding-bottom: 8px;
       font-size: 15px;
     }
@@ -504,7 +560,7 @@ DEMO_HTML = r"""<!doctype html>
       align-items: baseline;
       font-family: "IBM Plex Mono", monospace;
       padding: 8px 0;
-      border-bottom: 1px solid rgba(215, 201, 167, .8);
+      border-bottom: 1px solid var(--line);
     }
     .metric strong { font-size: 18px; }
     .note {
@@ -513,13 +569,25 @@ DEMO_HTML = r"""<!doctype html>
       line-height: 1.4;
       margin-top: 12px;
     }
-    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .banner {
-      margin: 18px 0 0;
-      border-left: 5px solid var(--accent);
-      padding: 12px 14px;
-      background: rgba(255, 250, 240, .7);
-      font-size: 16px;
+    .verdict-box {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      background: #fbfaf6;
+      margin-bottom: 14px;
+    }
+    .verdict-box strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+    .verdict-box span { color: var(--muted); line-height: 1.4; }
+    .small-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      font-weight: 600;
     }
     @keyframes rise {
       from { opacity: 0; transform: translateY(6px); }
@@ -527,60 +595,80 @@ DEMO_HTML = r"""<!doctype html>
     }
     @media (max-width: 980px) {
       .grid { grid-template-columns: 1fr; }
-      .split { grid-template-columns: 1fr; }
+      .plain-definition { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <header>
-    <div class="eyebrow">OpenEnv Hackathon · Circuit Detective</div>
-    <h1>Correlation points at a decoy. Intervention finds the circuit.</h1>
+    <div class="eyebrow">Circuit Detective · OpenEnv RL Environment</div>
+    <h1>A model can guess. A detective tests.</h1>
     <p class="lede">
-      This demo is a controlled planted-lite mechanistic-interpretability task.
-      The agent sees two plausible attention heads. The top score is intentionally misleading;
-      only ablation identifies the causal head.
+      A language model has many tiny parts inside it. One part looks suspicious from logs,
+      but another part actually causes the behavior. The task is to learn the scientific move:
+      do not trust the ranking; run an intervention.
     </p>
-    <div class="banner">
-      Honest scope: this page demonstrates the environment and causal protocol. Final Phase 2 training metrics appear here once the HF Jobs artifact is uploaded.
+    <div class="plain-definition">
+      <div class="definition-card">
+        <strong>Suspicion</strong>
+        <span>An inspection score says which internal part looks most related.</span>
+      </div>
+      <div class="definition-card">
+        <strong>Intervention</strong>
+        <span>Turn a part off and measure whether the model behavior changes.</span>
+      </div>
+      <div class="definition-card">
+        <strong>Circuit</strong>
+        <span>The part that changes behavior is the cause. Submit that, not the decoy.</span>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <button class="warn" onclick="runBaseline()">Run naive baseline</button>
+      <button class="primary" onclick="runProtocol()">Run causal agent</button>
+      <button onclick="resetCase()">Try manually</button>
+      <a class="small-link" href="/web/">OpenEnv tool UI</a>
     </div>
   </header>
 
   <main class="grid">
     <section class="panel">
       <div class="panel-head">
-        <h2>Case File</h2>
-        <div class="controls">
-          <button class="primary" onclick="resetCase()">Reset Case</button>
-          <button onclick="inspectScores()">Inspect</button>
-          <button class="secondary" onclick="runProtocol()">Protocol Replay</button>
-          <button onclick="runBaseline()">Baseline Replay</button>
-        </div>
+        <h2>The Case</h2>
       </div>
       <div class="panel-body">
-        <p class="note" id="next-hint">Reset the case to begin.</p>
+        <div class="story" id="story"></div>
         <table>
-          <thead><tr><th>Head</th><th>Inspect score</th><th>Ablation delta</th></tr></thead>
+          <thead><tr><th>Internal part</th><th>Looks suspicious</th><th>Effect when removed</th></tr></thead>
           <tbody id="candidates"></tbody>
         </table>
+        <p class="note" id="next-hint">Reset the case to begin.</p>
         <div class="controls" id="candidate-actions"></div>
       </div>
     </section>
 
     <section class="panel">
-      <div class="panel-head"><h2>Lab Notebook</h2></div>
+      <div class="panel-head"><h2>What Happened</h2></div>
       <div class="panel-body">
         <div class="transcript" id="transcript"></div>
       </div>
     </section>
 
-    <aside class="panel">
-      <div class="panel-head"><h2>Verdict</h2></div>
-      <div class="panel-body">
-        <div class="rubric" id="rubric"></div>
-        <p class="note" id="ground-truth"></p>
-      </div>
-      <div class="panel-head"><h2>Results Snapshot</h2></div>
-      <div class="panel-body" id="results"></div>
+    <aside class="side-stack">
+      <section class="panel">
+        <div class="panel-head"><h2>Verdict</h2></div>
+        <div class="panel-body">
+          <div class="verdict-box" id="verdict-box">
+            <strong>Waiting for evidence</strong>
+            <span>Run the baseline or the causal agent to see the difference.</span>
+          </div>
+          <div class="rubric" id="rubric"></div>
+          <p class="note" id="ground-truth"></p>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="panel-head"><h2>Training Snapshot</h2></div>
+        <div class="panel-body" id="results"></div>
+      </section>
     </aside>
   </main>
 
@@ -600,6 +688,15 @@ DEMO_HTML = r"""<!doctype html>
       if (value === null || value === undefined) return "—";
       if (typeof value === "number") return value.toFixed(value > 1 ? 2 : 3);
       return String(value);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
     function parseHead(headId) {
@@ -667,17 +764,18 @@ DEMO_HTML = r"""<!doctype html>
 
     function render() {
       if (!state) return;
+      renderStory();
       document.getElementById("next-hint").innerHTML =
         state.done
-          ? `<span class="chip ${state.rubric.causal_success ? "good" : "bad"}">${state.rubric.causal_success ? "Causal success" : "Failed causal protocol"}</span>`
-          : `Next expected tool: <span class="chip">${state.next_required_tool || "choose from evidence"}</span>`;
+          ? `<span class="chip ${state.rubric.causal_success ? "good" : "bad"}">${state.rubric.causal_success ? "The agent found the cause." : "The agent guessed the decoy."}</span>`
+          : `Next move: <span class="chip">${humanNextTool(state.next_required_tool)}</span>`;
 
       const candidateBody = document.getElementById("candidates");
       candidateBody.innerHTML = state.candidates.map(row => `
         <tr>
           <td><strong>${row.head_id}</strong></td>
-          <td>${fmt(row.score)}</td>
-          <td>${fmt(row.behavior_delta)}</td>
+          <td>${row.score === null ? "not inspected" : `<span class="chip ${row.score > 0.7 ? "warn" : ""}">${fmt(row.score)}</span>`}</td>
+          <td>${row.behavior_delta === null ? "not tested" : `<span class="chip ${row.behavior_delta > 0.5 ? "good" : "bad"}">${fmt(row.behavior_delta)}</span>`}</td>
         </tr>
       `).join("");
 
@@ -685,32 +783,36 @@ DEMO_HTML = r"""<!doctype html>
       const top = state.candidates.find(row => row.score !== null);
       const best = state.best_ablated_head;
       actions.innerHTML = state.done ? "" : [
-        ...state.candidates.map(row => `<button onclick="ablate('${row.head_id}')">Ablate ${row.head_id}</button>`),
-        top ? `<button onclick="submit('${top.head_id}')">Submit top-ranked</button>` : "",
-        best ? `<button class="secondary" onclick="submit('${best}')">Submit max-delta ${best}</button>` : ""
+        !top ? `<button class="primary" onclick="inspectScores()">Inspect suspicious parts</button>` : "",
+        ...state.candidates.map(row => `<button onclick="ablate('${row.head_id}')">Turn off ${row.head_id}</button>`),
+        top ? `<button class="warn" onclick="submit('${top.head_id}')">Guess top score</button>` : "",
+        best ? `<button class="secondary" onclick="submit('${best}')">Submit strongest effect ${best}</button>` : ""
       ].join("");
 
       const transcript = document.getElementById("transcript");
       transcript.innerHTML = state.transcript.map((event, index) => `
         <div class="event">
           <div class="event-title">
-            <span>${index}. ${event.tool_name}</span>
+            <span>${index}. ${humanToolName(event.tool_name)}</span>
             <span>reward ${fmt(event.reward)}</span>
           </div>
-          <p>${event.summary}</p>
-          <pre>${JSON.stringify(event.result, null, 2)}</pre>
+          <p>${plainEvent(event)}</p>
+          <details>
+            <summary>Raw environment output</summary>
+            <pre>${escapeHtml(JSON.stringify(event.result, null, 2))}</pre>
+          </details>
         </div>
       `).join("");
 
       const rubric = state.rubric;
+      document.getElementById("verdict-box").innerHTML = verdictCopy();
       document.getElementById("rubric").innerHTML = Object.entries({
-        "Inspected scores": rubric.inspected_scores,
-        "Ran ablation": rubric.ran_ablation,
-        "Submitted circuit": rubric.submitted_circuit,
-        "Submitted ablated head": rubric.submitted_after_ablation,
-        "Causal success": rubric.causal_success,
-        "Final F1": fmt(rubric.final_f1),
-        "Final reward": fmt(rubric.final_reward)
+        "Looked before acting": rubric.inspected_scores,
+        "Ran an intervention": rubric.ran_ablation,
+        "Submitted an answer": rubric.submitted_circuit,
+        "Used intervention evidence": rubric.submitted_after_ablation,
+        "Found the true cause": rubric.causal_success,
+        "Reward": fmt(rubric.final_reward)
       }).map(([key, value]) => `
         <div class="rubric-row"><span>${key}</span><strong>${typeof value === "boolean" ? (value ? "yes" : "no") : value}</strong></div>
       `).join("");
@@ -719,15 +821,80 @@ DEMO_HTML = r"""<!doctype html>
         state.done ? `Ground truth revealed after submit: ${state.ground_truth_heads.join(", ")}` : "";
     }
 
+    function renderStory() {
+      const hasScores = state.candidates.some(row => row.score !== null);
+      const hasDelta = state.candidates.some(row => row.behavior_delta !== null);
+      const isDone = state.done;
+      const steps = [
+        ["1", "Find suspects", hasScores ? "Two internal parts were ranked by suspicious-looking correlation." : "Ask the environment which internal parts look related."],
+        ["2", "Test the suspects", hasDelta ? "At least one part was turned off and measured." : "Turn each part off. A causal part changes behavior; a decoy does not."],
+        ["3", "Submit the cause", isDone ? "The answer has been submitted and scored." : "Submit the part with the strongest measured effect, not the prettiest score."]
+      ];
+      document.getElementById("story").innerHTML = steps.map(([n, title, text]) => `
+        <div class="story-step"><b>${n}</b><div><strong>${title}</strong><span>${text}</span></div></div>
+      `).join("");
+    }
+
+    function humanNextTool(tool) {
+      if (tool === "inspect_induction_scores") return "inspect suspects";
+      if (tool === "ablate_head") return "turn off each suspect";
+      if (tool === "submit_circuit") return "submit strongest effect";
+      return "choose from evidence";
+    }
+
+    function humanToolName(tool) {
+      if (tool === "reset") return "case opened";
+      if (tool === "inspect_induction_scores") return "inspection";
+      if (tool === "ablate_head") return "intervention";
+      if (tool === "submit_circuit") return "submission";
+      return tool;
+    }
+
+    function plainEvent(event) {
+      const result = event.result || {};
+      if (event.tool_name === "reset") {
+        return "The environment creates a controlled case with two plausible internal parts. One is a decoy; one is causal.";
+      }
+      if (event.tool_name === "inspect_induction_scores") {
+        const scores = result.scores || [];
+        if (scores.length >= 2) {
+          return `${scores[0].head_id} looks most suspicious by correlation. That is exactly the trap: high score does not prove causality.`;
+        }
+        return "The agent asked for suspicious internal parts.";
+      }
+      if (event.tool_name === "ablate_head") {
+        const effect = Number(result.behavior_delta || 0);
+        const label = effect > 0.5 ? "large effect" : "small effect";
+        return `The agent turned off ${result.head_id}. The measured behavior change was ${fmt(effect)}: ${label}.`;
+      }
+      if (event.tool_name === "submit_circuit") {
+        const heads = (result.submitted_heads || []).join(", ");
+        return state.rubric.causal_success
+          ? `The agent submitted ${heads}. It used intervention evidence and found the true cause.`
+          : `The agent submitted ${heads}. This is the failure mode: guessing from correlation instead of testing causality.`;
+      }
+      return event.summary || "";
+    }
+
+    function verdictCopy() {
+      if (!state.done) {
+        return `<strong>Waiting for evidence</strong><span>The correct move is inspect, intervene, then submit the part with the largest effect.</span>`;
+      }
+      if (state.rubric.causal_success) {
+        return `<strong>Cause found</strong><span>The agent ignored the tempting top score and submitted the part that actually changed behavior.</span>`;
+      }
+      return `<strong>Decoy submitted</strong><span>The baseline followed the suspicious-looking score and failed the causal test.</span>`;
+    }
+
     function renderResults(results) {
       const phase2 = results.phase2;
       const phase1 = results.phase1;
       document.getElementById("results").innerHTML = `
         <div class="metric"><span>Phase 1 success</span><strong>${phase1 ? fmt(phase1.success_rate * 100) + "%" : "—"}</strong></div>
-        <div class="metric"><span>Phase 2 status</span><strong>${results.phase2_status.replaceAll("_", " ")}</strong></div>
+        <div class="metric"><span>Phase 2 artifact</span><strong>${results.phase2_status.replaceAll("_", " ")}</strong></div>
         <div class="metric"><span>Phase 2 causal success</span><strong>${phase2 && phase2.causal_success_rate !== null ? fmt(phase2.causal_success_rate * 100) + "%" : "pending"}</strong></div>
         <div class="metric"><span>Terminal no-submit</span><strong>${phase2 && phase2.terminal_ready_no_submit_rate !== null ? fmt(phase2.terminal_ready_no_submit_rate * 100) + "%" : "pending"}</strong></div>
-        <p class="note">Artifacts are read from the Space repo when available; no metric is fabricated.</p>
+        <p class="note">This panel only reads committed artifacts from the Space repo. Pending means the run has not uploaded final metrics yet.</p>
       `;
     }
 

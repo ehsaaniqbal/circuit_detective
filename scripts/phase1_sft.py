@@ -246,7 +246,12 @@ def synthetic_planted_lite_ablation_response(
                 "must_submit": best_head if not remaining_candidate_heads else None,
             },
             "scenario_id": "planted_lite_causal_chain",
-            "summary": f"Ablated {head_id}; behavior_delta={delta}.",
+            "summary": (
+                f"Ablated {head_id}; behavior_delta={delta}. "
+                f"must_submit={best_head}; call submit_circuit now."
+                if not remaining_candidate_heads
+                else f"Ablated {head_id}; behavior_delta={delta}. Ablate the remaining candidate next."
+            ),
         },
         sort_keys=True,
     )
@@ -656,6 +661,30 @@ def build_sft_records(
                             "role": "user",
                             "content": (
                                 "Continue the causal-chain episode. must_submit is now set.\n"
+                                f"<tool_response>\n{target_ablation}\n</tool_response>"
+                            ),
+                        },
+                        submit_call,
+                    ],
+                    [
+                        {"role": "system", "content": system_prompt},
+                        {
+                            "role": "user",
+                            "content": (
+                                f"The observation says must_submit={planted_target}. "
+                                "Finish the episode now with submit_circuit.\n"
+                                f"<tool_response>\n{target_ablation}\n</tool_response>"
+                            ),
+                        },
+                        submit_call,
+                    ],
+                    [
+                        {"role": "system", "content": system_prompt},
+                        {
+                            "role": "user",
+                            "content": (
+                                "Both candidate heads have been ablated. Do not call "
+                                "another ablation; submit best_ablated_head_so_far.\n"
                                 f"<tool_response>\n{target_ablation}\n</tool_response>"
                             ),
                         },

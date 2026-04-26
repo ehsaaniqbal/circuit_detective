@@ -256,7 +256,7 @@ def test_planted_lite_wrapper_rewards_full_causal_chain_only() -> None:
     rewards = reward_func([env])
     records = consume_reward_trace()
 
-    assert rewards[0] == 4.0
+    assert rewards[0] == 5.0
     assert records[0]["causal_success"] is True
     assert records[0]["ablate_submitted"] is True
 
@@ -282,7 +282,7 @@ def test_planted_lite_reward_ladder_keeps_grpo_variance_before_success() -> None
 
     rewards = reward_func([inspect_only, one_ablation, two_ablation])
 
-    assert rewards == [-1.2, -0.4, 0.6]
+    assert rewards == [-1.2, -0.7, -0.2]
 
 
 def test_planted_lite_wrong_submit_after_full_evidence_is_less_bad_than_no_evidence() -> None:
@@ -300,7 +300,7 @@ def test_planted_lite_wrong_submit_after_full_evidence_is_less_bad_than_no_evide
 
     rewards = reward_func([env])
 
-    assert rewards[0] == -0.6
+    assert rewards[0] == 0.4
 
 
 def test_planted_lite_correct_submit_after_one_ablation_gets_bridge_credit() -> None:
@@ -314,7 +314,7 @@ def test_planted_lite_correct_submit_after_one_ablation_gets_bridge_credit() -> 
     env.submit_circuit([target.head_id])
     rewards = reward_func([env])
 
-    assert rewards[0] == 1.0
+    assert rewards[0] == 1.5
 
 
 def test_ioi_wrapper_handles_multi_head_submission_and_rubric() -> None:

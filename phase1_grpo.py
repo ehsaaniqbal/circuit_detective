@@ -166,8 +166,9 @@ PLANTED_LITE_SYSTEM_PROMPT = (
     "causal-chain curriculum. The top inspection score is deliberately a decoy. "
     "Required workflow: call inspect_induction_scores(top_k=2), ablate both "
     "candidate heads, compare behavior_delta, then call submit_circuit with "
-    "exactly the best_ablated_head_so_far. Do not submit before ablating both "
-    "candidates."
+    "exactly the best_ablated_head_so_far. Episodes that stop after ablation "
+    "without submit_circuit are failures. When a tool response contains "
+    "must_submit, immediately call submit_circuit with that exact head."
 )
 
 PLANTED_LITE_USER_PROMPT_VARIANTS = [
@@ -186,6 +187,10 @@ PLANTED_LITE_USER_PROMPT_VARIANTS = [
     (
         "Do not guess from ranking. Full credit requires ablating both candidate "
         "heads and submitting the max-delta head."
+    ),
+    (
+        "Terminal action matters: after both candidate heads are ablated and "
+        "must_submit is populated, call submit_circuit immediately."
     ),
 ]
 
@@ -480,18 +485,18 @@ class CircuitDetectiveToolEnv:
 
         if self.done:
             if f1 == 1.0 and ablated_all_candidates:
-                return 4.0
+                return 5.0
             if f1 == 1.0 and ablated_candidates:
-                return 1.0
+                return 1.5
             if "submit_circuit" in tools and ablated_all_candidates:
-                return -0.6
+                return 0.4
             if "submit_circuit" in tools:
-                return -1.0
+                return -0.1
 
         if ablated_all_candidates:
-            return 0.6
+            return -0.2
         if len(ablated_candidates) == 1:
-            return -0.4
+            return -0.7
         if "inspect_induction_scores" in tools:
             return -1.2
         if tools:
@@ -684,10 +689,10 @@ class CircuitDetectiveToolEnv:
                 candidate_heads = set(self.env.candidate_heads())
                 ablated_candidates = candidate_heads.intersection(self._ablated_heads)
                 if candidate_heads and ablated_candidates == candidate_heads:
-                    return -0.6
+                    return 0.4
                 if ablated_candidates:
-                    return -1.0
-                return -1.5
+                    return -0.1
+                return -1.2
             if self.require_ablation:
                 return -0.40
             return env_reward + 0.03
@@ -719,10 +724,12 @@ class CircuitDetectiveToolEnv:
             phase2 = observation.result.get("phase2", {})
             ablated_all = bool(phase2.get("ablated_all_candidates", False)) if isinstance(phase2, dict) else False
             if f1 == 1.0 and ablated_all and max(submitted_deltas) >= self.causal_delta_threshold:
-                return 4.0
+                return 5.0
             if f1 == 1.0:
-                return 1.0
-            return -2.0
+                return 1.5
+            if ablated_all:
+                return 0.4
+            return -0.1
         if f1 < 1.0:
             return -0.20 + (0.20 * f1)
         if max(submitted_deltas) >= self.causal_delta_threshold:

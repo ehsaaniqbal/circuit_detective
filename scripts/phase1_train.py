@@ -173,6 +173,8 @@ def summarize_reward_trace(
             f"{prefix}_ablate_submitted_rate": 0.0,
             f"{prefix}_causal_success_rate": 0.0,
             f"{prefix}_mean_ablation_faithfulness": 0.0,
+            f"{prefix}_all_candidates_ablated_rate": 0.0,
+            f"{prefix}_mean_candidate_ablation_coverage": 0.0,
         }
 
     count = float(len(records))
@@ -197,6 +199,8 @@ def summarize_reward_trace(
         f"{prefix}_ablate_submitted_rate": rate("ablate_submitted"),
         f"{prefix}_causal_success_rate": rate("causal_success"),
         f"{prefix}_mean_ablation_faithfulness": mean("ablation_faithfulness"),
+        f"{prefix}_all_candidates_ablated_rate": rate("all_candidates_ablated"),
+        f"{prefix}_mean_candidate_ablation_coverage": mean("candidate_ablation_coverage"),
     }
 
 

@@ -127,7 +127,7 @@ def test_planted_lite_sft_records_include_full_causal_chain() -> None:
 
     assert records
     full_trace = records[0]["text"]
-    assert len(records) == 16
+    assert len(records) == 30
     assert "inspect_induction_scores" in full_trace
     assert full_trace.count("<function=ablate_head>") == 2
     assert "best_ablated_head_so_far" in full_trace
@@ -135,6 +135,8 @@ def test_planted_lite_sft_records_include_full_causal_chain() -> None:
     assert "<function=submit_circuit>" in full_trace
     assert any("One candidate remains; ablate it." in record["text"] for record in records)
     assert any("must_submit is now set." in record["text"] for record in records)
+    assert any("Finish the episode now with submit_circuit." in record["text"] for record in records)
+    assert any("Do not call another ablation" in record["text"] for record in records)
 
 
 def test_planted_lite_sft_preflight_rejects_truncated_submit() -> None:

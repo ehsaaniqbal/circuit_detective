@@ -45,6 +45,7 @@ _SESSIONS: dict[str, DemoSession] = {}
 
 def register_demo_routes(app: FastAPI) -> None:
     """Attach the demo UI and JSON helpers without disturbing OpenEnv routes."""
+    remove_existing_root_route(app)
 
     @app.get("/", response_class=HTMLResponse)
     def demo_index() -> str:
@@ -74,6 +75,18 @@ def register_demo_routes(app: FastAPI) -> None:
     @app.get("/demo/results")
     def demo_results() -> dict[str, object]:
         return load_results_snapshot()
+
+
+def remove_existing_root_route(app: FastAPI) -> None:
+    """Let the demo own `/` even when OpenEnv's Gradio UI is enabled."""
+    app.router.routes[:] = [
+        route
+        for route in app.router.routes
+        if not (
+            getattr(route, "path", None) == "/"
+            and "GET" in (getattr(route, "methods", set()) or set())
+        )
+    ]
 
 
 def make_planted_lite_env(seed: int = DEFAULT_DEMO_SEED) -> CircuitDetectiveEnvironment:

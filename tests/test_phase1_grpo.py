@@ -282,7 +282,7 @@ def test_planted_lite_reward_ladder_keeps_grpo_variance_before_success() -> None
 
     rewards = reward_func([inspect_only, one_ablation, two_ablation])
 
-    assert rewards == [-1.2, -0.7, -0.2]
+    assert rewards == [-1.2, -1.0, -0.8]
 
 
 def test_planted_lite_wrong_submit_after_full_evidence_is_less_bad_than_no_evidence() -> None:
@@ -300,7 +300,7 @@ def test_planted_lite_wrong_submit_after_full_evidence_is_less_bad_than_no_evide
 
     rewards = reward_func([env])
 
-    assert rewards[0] == 0.4
+    assert rewards[0] == 0.6
 
 
 def test_planted_lite_correct_submit_after_one_ablation_gets_bridge_credit() -> None:
@@ -315,6 +315,32 @@ def test_planted_lite_correct_submit_after_one_ablation_gets_bridge_credit() -> 
     rewards = reward_func([env])
 
     assert rewards[0] == 1.5
+
+
+def test_planted_lite_strict_renderer_compacts_terminal_guidance() -> None:
+    env = make_planted_lite_env(seed=53)
+    reset_payload = json.loads(env.reset())
+
+    assert "available_tools" not in reset_payload
+    assert "candidate_heads" not in reset_payload["result"]
+    assert reset_payload["result"]["next_required_tool"] == "inspect_induction_scores"
+
+    inspect_payload = json.loads(env.inspect_induction_scores(top_k=2))
+    candidates = [
+        Head.parse(str(item["head_id"]))
+        for item in inspect_payload["result"]["scores"]
+    ]
+    for candidate in candidates:
+        ablation_payload = json.loads(
+            env.ablate_head(layer=candidate.layer, head=candidate.head)
+        )
+
+    assert "available_tools" not in ablation_payload
+    assert ablation_payload["result"]["next_required_tool"] == "submit_circuit"
+    assert ablation_payload["result"]["next_required_arguments"] == {
+        "heads": [ablation_payload["result"]["best_ablated_head_so_far"]]
+    }
+    assert ablation_payload["result"]["terminal_action_required"] is True
 
 
 def test_ioi_wrapper_handles_multi_head_submission_and_rubric() -> None:

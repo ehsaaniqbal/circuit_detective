@@ -136,6 +136,15 @@ class CircuitDetectiveEnvironment(Environment):
                 "goal": goal,
                 "requires_ablation": self._require_ablation,
                 "candidate_heads": self.candidate_heads(),
+                **(
+                    {
+                        "next_required_tool": "inspect_induction_scores",
+                        "next_required_arguments": {"top_k": 2},
+                        "terminal_action_required": False,
+                    }
+                    if self._backend.scenario_id == PLANTED_LITE_SCENARIO_ID
+                    else {}
+                ),
             },
             reward=0.0,
             done=False,
@@ -252,9 +261,22 @@ class CircuitDetectiveEnvironment(Environment):
                 f"Returned the top {len(scores)} heads ranked by induction score. "
                 "Use the strongest supported head in submit_circuit before the budget ends."
             )
+        result: dict[str, object] = {
+            "scores": scores,
+            "candidate_heads": [str(item["head_id"]) for item in scores],
+        }
+        if self._backend.scenario_id == PLANTED_LITE_SCENARIO_ID and scores:
+            first_head = Head.parse(str(scores[0]["head_id"]))
+            result.update(
+                {
+                    "next_required_tool": "ablate_head",
+                    "next_required_arguments": {"layer": first_head.layer, "head": first_head.head},
+                    "terminal_action_required": False,
+                }
+            )
         return self._make_observation(
             summary=summary,
-            result={"scores": scores, "candidate_heads": [str(item["head_id"]) for item in scores]},
+            result=result,
             reward=0.01,
             done=False,
         )
@@ -277,20 +299,42 @@ class CircuitDetectiveEnvironment(Environment):
             ablated_candidates = [
                 head_id for head_id in candidate_heads if head_id in self._ablation_deltas
             ]
+            remaining_candidate_heads = [
+                head_id for head_id in candidate_heads if head_id not in self._ablation_deltas
+            ]
+            terminal_action_required = not remaining_candidate_heads
+            if terminal_action_required:
+                next_required_tool = "submit_circuit"
+                next_required_arguments: dict[str, object] = {"heads": [best_head]}
+                summary = (
+                    f"Ablated L{layer}H{head}; all candidate heads are now ablated. "
+                    f"Next action must be submit_circuit with heads=['{best_head}']."
+                )
+            else:
+                next_head = Head.parse(remaining_candidate_heads[0])
+                next_required_tool = "ablate_head"
+                next_required_arguments = {"layer": next_head.layer, "head": next_head.head}
+                summary = (
+                    f"Ablated L{layer}H{head}; ablate remaining candidate "
+                    f"{remaining_candidate_heads[0]} next."
+                )
             payload.update(
                 {
                     "candidate_heads": candidate_heads,
                     "ablated_candidate_heads": ablated_candidates,
-                    "remaining_candidate_heads": [
-                        head_id for head_id in candidate_heads if head_id not in self._ablation_deltas
-                    ],
+                    "remaining_candidate_heads": remaining_candidate_heads,
                     "best_ablated_head_so_far": best_head,
                     "best_ablated_delta_so_far": self._ablation_deltas[best_head],
                     "must_submit": best_head if len(ablated_candidates) == len(candidate_heads) else None,
+                    "next_required_tool": next_required_tool,
+                    "next_required_arguments": next_required_arguments,
+                    "terminal_action_required": terminal_action_required,
                 }
             )
+        else:
+            summary = f"Ablated L{layer}H{head} and measured the behavior delta."
         return self._make_observation(
-            summary=f"Ablated L{layer}H{head} and measured the behavior delta.",
+            summary=summary,
             result=payload,
             reward=0.01,
             done=False,

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+from collections import Counter
 from pathlib import Path
 
 from circuit_detective.phase1_grpo import (
@@ -175,6 +176,9 @@ def summarize_reward_trace(
             f"{prefix}_mean_ablation_faithfulness": 0.0,
             f"{prefix}_all_candidates_ablated_rate": 0.0,
             f"{prefix}_mean_candidate_ablation_coverage": 0.0,
+            f"{prefix}_terminal_ready_no_submit_rate": 0.0,
+            f"{prefix}_submitted_after_all_candidates_rate": 0.0,
+            f"{prefix}_submitted_best_ablated_head_rate": 0.0,
         }
 
     count = float(len(records))
@@ -201,6 +205,28 @@ def summarize_reward_trace(
         f"{prefix}_mean_ablation_faithfulness": mean("ablation_faithfulness"),
         f"{prefix}_all_candidates_ablated_rate": rate("all_candidates_ablated"),
         f"{prefix}_mean_candidate_ablation_coverage": mean("candidate_ablation_coverage"),
+        f"{prefix}_terminal_ready_no_submit_rate": rate("terminal_ready_no_submit"),
+        f"{prefix}_submitted_after_all_candidates_rate": rate("submitted_after_all_candidates"),
+        f"{prefix}_submitted_best_ablated_head_rate": rate("submitted_best_ablated_head"),
+    }
+
+
+def summarize_rollout_patterns(
+    records: list[dict[str, object]],
+    *,
+    prefix: str,
+    limit: int = 12,
+) -> dict[str, object]:
+    reward_counts = Counter(
+        f"{float(record.get('reward', 0.0)):.2f}" for record in records
+    )
+    sequence_counts = Counter(
+        " -> ".join(str(tool) for tool in record.get("tool_sequence", []))
+        for record in records
+    )
+    return {
+        f"{prefix}_reward_counts": dict(reward_counts.most_common(limit)),
+        f"{prefix}_tool_sequence_counts": dict(sequence_counts.most_common(limit)),
     }
 
 
@@ -218,7 +244,13 @@ def evaluate_with_rollout_metrics(
             prefix=metric_key_prefix,
         )
     )
-    metrics[f"{metric_key_prefix}_sample_rollouts"] = rollout_records[:8]
+    metrics.update(
+        summarize_rollout_patterns(
+            rollout_records,
+            prefix=metric_key_prefix,
+        )
+    )
+    metrics[f"{metric_key_prefix}_sample_rollouts"] = rollout_records[:32]
     return dict(metrics)
 
 

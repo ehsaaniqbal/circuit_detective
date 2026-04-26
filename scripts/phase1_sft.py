@@ -120,7 +120,10 @@ def synthetic_reset_observation(*, scenario: str) -> str:
                 "remaining_budget": remaining_budget,
                 "result": {
                     "goal": goal,
+                    "next_required_arguments": {"top_k": 2},
+                    "next_required_tool": "inspect_induction_scores",
                     "requires_ablation": True,
+                    "terminal_action_required": False,
                 },
                 "scenario_id": scenario_id,
                 "summary": summary,
@@ -194,6 +197,7 @@ def synthetic_planted_lite_inspect_response(
     for score, head_id in [(0.96, decoy_head), (0.84, target_head)]:
         layer, head = parse_head_id(head_id)
         scores.append({"head": head, "head_id": head_id, "layer": layer, "score": score})
+    next_layer, next_head = parse_head_id(decoy_head)
     return json.dumps(
         {
             "done": False,
@@ -201,10 +205,13 @@ def synthetic_planted_lite_inspect_response(
             "result": {
                 "scores": scores,
                 "candidate_heads": [decoy_head, target_head],
+                "next_required_tool": "ablate_head",
+                "next_required_arguments": {"layer": next_layer, "head": next_head},
+                "terminal_action_required": False,
             },
             "scenario_id": "planted_lite_causal_chain",
             "summary": (
-                "Ablate both candidate_heads; inspection rank alone is a decoy."
+                f"Ablate both candidate_heads; start with {decoy_head}."
             ),
         },
         sort_keys=True,
@@ -228,6 +235,15 @@ def synthetic_planted_lite_ablation_response(
     remaining_candidate_heads = [
         candidate for candidate in candidate_heads if candidate not in ablated_candidate_heads
     ]
+    if remaining_candidate_heads:
+        next_layer, next_head = parse_head_id(remaining_candidate_heads[0])
+        next_required_tool = "ablate_head"
+        next_required_arguments: dict[str, object] = {"layer": next_layer, "head": next_head}
+        terminal_action_required = False
+    else:
+        next_required_tool = "submit_circuit"
+        next_required_arguments = {"heads": [best_head]}
+        terminal_action_required = True
     delta = deltas[head_id]
     return json.dumps(
         {
@@ -244,13 +260,19 @@ def synthetic_planted_lite_ablation_response(
                 "remaining_candidate_heads": remaining_candidate_heads,
                 "best_ablated_head_so_far": best_head,
                 "must_submit": best_head if not remaining_candidate_heads else None,
+                "next_required_tool": next_required_tool,
+                "next_required_arguments": next_required_arguments,
+                "terminal_action_required": terminal_action_required,
             },
             "scenario_id": "planted_lite_causal_chain",
             "summary": (
                 f"Ablated {head_id}; behavior_delta={delta}. "
-                f"must_submit={best_head}; call submit_circuit now."
+                f"next_required_tool=submit_circuit; must_submit={best_head}."
                 if not remaining_candidate_heads
-                else f"Ablated {head_id}; behavior_delta={delta}. Ablate the remaining candidate next."
+                else (
+                    f"Ablated {head_id}; behavior_delta={delta}. "
+                    f"next_required_tool=ablate_head for {remaining_candidate_heads[0]}."
+                )
             ),
         },
         sort_keys=True,

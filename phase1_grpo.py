@@ -168,6 +168,7 @@ PLANTED_LITE_SYSTEM_PROMPT = (
     "candidate heads, compare behavior_delta, then call submit_circuit with "
     "exactly the best_ablated_head_so_far. Episodes that stop after ablation "
     "without submit_circuit are failures. When a tool response contains "
+    "next_required_tool, follow it exactly. When a tool response contains "
     "must_submit, immediately call submit_circuit with that exact head."
 )
 
@@ -191,6 +192,10 @@ PLANTED_LITE_USER_PROMPT_VARIANTS = [
     (
         "Terminal action matters: after both candidate heads are ablated and "
         "must_submit is populated, call submit_circuit immediately."
+    ),
+    (
+        "Follow next_required_tool exactly. If it says submit_circuit, finish "
+        "the episode with the provided heads argument."
     ),
 ]
 
@@ -489,14 +494,14 @@ class CircuitDetectiveToolEnv:
             if f1 == 1.0 and ablated_candidates:
                 return 1.5
             if "submit_circuit" in tools and ablated_all_candidates:
-                return 0.4
+                return 0.6
             if "submit_circuit" in tools:
                 return -0.1
 
         if ablated_all_candidates:
-            return -0.2
+            return -0.8
         if len(ablated_candidates) == 1:
-            return -0.7
+            return -1.0
         if "inspect_induction_scores" in tools:
             return -1.2
         if tools:
@@ -521,15 +526,21 @@ class CircuitDetectiveToolEnv:
         }
         candidate_heads = set(self.env.candidate_heads())
         ablated_candidate_heads = sorted(candidate_heads.intersection(self._ablated_heads))
+        ablated_all_candidates = bool(candidate_heads) and set(ablated_candidate_heads) == candidate_heads
         max_submitted_delta = max(submitted_ablation_deltas.values(), default=0.0)
         ablate_submitted = bool(submitted_ablation_deltas)
+        best_ablated_head = (
+            max(self._ablation_deltas, key=self._ablation_deltas.get)
+            if self._ablation_deltas
+            else ""
+        )
         causal_success = (
             terminal_score.get("f1", 0.0) == 1.0
             and ablate_submitted
             and max_submitted_delta >= self.causal_delta_threshold
             and (
                 not self.strict_causal_chain
-                or (bool(candidate_heads) and set(ablated_candidate_heads) == candidate_heads)
+                or ablated_all_candidates
             )
         )
         scenario_id = ""
@@ -552,6 +563,8 @@ class CircuitDetectiveToolEnv:
             "terminal_reward": self.last_step_reward if self.done else 0.0,
             "f1": terminal_score.get("f1", 0.0),
             "tool_calls": len(self.tool_trace),
+            "tool_sequence": tools,
+            "tool_trace": self.tool_trace,
             "used_probe": "run_probe" in tools,
             "used_inspect": "inspect_induction_scores" in tools,
             "used_ablate": "ablate_head" in tools,
@@ -564,7 +577,12 @@ class CircuitDetectiveToolEnv:
                 if candidate_heads
                 else 0.0
             ),
-            "all_candidates_ablated": bool(candidate_heads) and set(ablated_candidate_heads) == candidate_heads,
+            "all_candidates_ablated": ablated_all_candidates,
+            "terminal_ready_no_submit": ablated_all_candidates and "submit_circuit" not in tools,
+            "submitted_after_all_candidates": ablated_all_candidates and "submit_circuit" in tools,
+            "best_ablated_head": best_ablated_head,
+            "submitted_best_ablated_head": bool(best_ablated_head)
+            and best_ablated_head in submitted_set,
             "best_seen_head": self._best_seen_head,
             "ablate_submitted": ablate_submitted,
             "ablation_faithfulness": max_submitted_delta,
@@ -689,7 +707,7 @@ class CircuitDetectiveToolEnv:
                 candidate_heads = set(self.env.candidate_heads())
                 ablated_candidates = candidate_heads.intersection(self._ablated_heads)
                 if candidate_heads and ablated_candidates == candidate_heads:
-                    return 0.4
+                    return 0.6
                 if ablated_candidates:
                     return -0.1
                 return -1.2
@@ -728,7 +746,7 @@ class CircuitDetectiveToolEnv:
             if f1 == 1.0:
                 return 1.5
             if ablated_all:
-                return 0.4
+                return 0.6
             return -0.1
         if f1 < 1.0:
             return -0.20 + (0.20 * f1)
@@ -752,6 +770,9 @@ class CircuitDetectiveToolEnv:
         }
 
     def _render_observation(self, observation: Any) -> str:
+        if self.strict_causal_chain:
+            return self._render_strict_causal_observation(observation)
+
         payload = {
             "summary": observation.summary,
             "result": observation.result,
@@ -759,6 +780,49 @@ class CircuitDetectiveToolEnv:
             "step_count": observation.step_count,
             "remaining_budget": observation.remaining_budget,
             "available_tools": observation.available_tools,
+            "done": observation.done,
+        }
+        return json.dumps(payload, sort_keys=True)
+
+    def _render_strict_causal_observation(self, observation: Any) -> str:
+        keep_result_keys = {
+            "ablation_faithfulness",
+            "ablated_all_candidates",
+            "ablated_candidate_heads",
+            "ablated_head",
+            "behavior_delta",
+            "best_ablated_delta_so_far",
+            "best_ablated_head_so_far",
+            "candidate_heads",
+            "causal_success",
+            "causal_verified",
+            "goal",
+            "must_submit",
+            "next_required_arguments",
+            "next_required_tool",
+            "phase2",
+            "remaining_candidate_heads",
+            "requires_ablation",
+            "score",
+            "scores",
+            "submitted_heads",
+            "terminal_action_required",
+            "total_reward",
+        }
+        result = {
+            key: value
+            for key, value in observation.result.items()
+            if key in keep_result_keys
+        }
+        if observation.step_count == 0:
+            result.pop("candidate_heads", None)
+
+        payload = {
+            "summary": observation.summary,
+            "result": result,
+            "scenario_id": observation.scenario_id,
+            "step_count": observation.step_count,
+            "remaining_budget": observation.remaining_budget,
             "done": observation.done,
         }
         return json.dumps(payload, sort_keys=True)

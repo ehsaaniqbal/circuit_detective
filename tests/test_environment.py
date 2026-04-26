@@ -193,6 +193,8 @@ def test_planted_lite_requires_ablating_both_candidates_then_submitting_max_delt
     assert observation.scenario_id == "planted_lite_causal_chain"
     assert observation.remaining_budget == 5
     assert observation.result["candidate_heads"] == env.candidate_heads()
+    assert observation.result["next_required_tool"] == "inspect_induction_scores"
+    assert observation.result["next_required_arguments"] == {"top_k": 2}
     assert len(env.candidate_heads()) == 2
 
     observation = env.step(
@@ -204,6 +206,7 @@ def test_planted_lite_requires_ablating_both_candidates_then_submitting_max_delt
     candidates = [str(item["head_id"]) for item in observation.result["scores"]]
     assert candidates == env.candidate_heads()
     assert candidates[0] != target
+    assert observation.result["next_required_tool"] == "ablate_head"
 
     decoy = Head.parse(candidates[0])
     observation = env.step(
@@ -214,6 +217,8 @@ def test_planted_lite_requires_ablating_both_candidates_then_submitting_max_delt
     )
     assert observation.result["best_ablated_head_so_far"] == candidates[0]
     assert observation.result["must_submit"] is None
+    assert observation.result["next_required_tool"] == "ablate_head"
+    assert observation.result["terminal_action_required"] is False
 
     planted = Head.parse(target)
     observation = env.step(
@@ -224,6 +229,9 @@ def test_planted_lite_requires_ablating_both_candidates_then_submitting_max_delt
     )
     assert observation.result["best_ablated_head_so_far"] == target
     assert observation.result["must_submit"] == target
+    assert observation.result["next_required_tool"] == "submit_circuit"
+    assert observation.result["next_required_arguments"] == {"heads": [target]}
+    assert observation.result["terminal_action_required"] is True
 
     observation = env.step(
         CircuitDetectiveAction(

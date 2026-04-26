@@ -111,10 +111,16 @@ def test_planted_lite_synthetic_trace_exposes_two_candidate_causal_chain() -> No
     assert inspect_payload["scenario_id"] == "planted_lite_causal_chain"
     assert inspect_payload["result"]["scores"][0]["head_id"] == decoy
     assert inspect_payload["result"]["scores"][1]["head_id"] == target
+    assert inspect_payload["result"]["next_required_tool"] == "ablate_head"
     assert decoy_payload["result"]["best_ablated_head_so_far"] == decoy
     assert decoy_payload["result"]["must_submit"] is None
+    assert decoy_payload["result"]["next_required_tool"] == "ablate_head"
+    assert decoy_payload["result"]["terminal_action_required"] is False
     assert target_payload["result"]["best_ablated_head_so_far"] == target
     assert target_payload["result"]["must_submit"] == target
+    assert target_payload["result"]["next_required_tool"] == "submit_circuit"
+    assert target_payload["result"]["next_required_arguments"] == {"heads": [target]}
+    assert target_payload["result"]["terminal_action_required"] is True
 
 
 def test_planted_lite_sft_records_include_full_causal_chain() -> None:
@@ -127,10 +133,11 @@ def test_planted_lite_sft_records_include_full_causal_chain() -> None:
 
     assert records
     full_trace = records[0]["text"]
-    assert len(records) == 30
+    assert len(records) == 36
     assert "inspect_induction_scores" in full_trace
     assert full_trace.count("<function=ablate_head>") == 2
     assert "best_ablated_head_so_far" in full_trace
+    assert "next_required_tool" in full_trace
     assert "must_submit" in full_trace
     assert "<function=submit_circuit>" in full_trace
     assert any("One candidate remains; ablate it." in record["text"] for record in records)

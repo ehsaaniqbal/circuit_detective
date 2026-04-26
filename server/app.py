@@ -12,9 +12,11 @@ except Exception as exc:  # pragma: no cover
 try:
     from ..models import CircuitDetectiveAction, CircuitDetectiveObservation
     from .circuit_detective_environment import CircuitDetectiveEnvironment
+    from .demo import register_demo_routes
 except ImportError:
     from models import CircuitDetectiveAction, CircuitDetectiveObservation
     from server.circuit_detective_environment import CircuitDetectiveEnvironment
+    from server.demo import register_demo_routes
 
 
 app = create_app(
@@ -24,6 +26,7 @@ app = create_app(
     env_name="circuit_detective",
     max_concurrent_envs=16,
 )
+register_demo_routes(app)
 
 
 def main(host: str = "0.0.0.0", port: int = 8000) -> None:

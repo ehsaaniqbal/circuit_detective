@@ -48,7 +48,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--backend", choices=["trl", "unsloth"], default="trl")
     parser.add_argument(
         "--scenario",
-        choices=["phase1", "phase2", "planted", "ioi", "curriculum", "real_ioi"],
+        choices=["phase1", "phase2", "planted", "planted_lite", "ioi", "curriculum", "real_ioi"],
         default="phase1",
         help="Training curriculum level to pass through to SFT/GRPO scripts.",
     )

@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 from .models import CircuitDetectiveAction
 from .server.backend import (
     CircuitBackend,
+    PlantedLiteCausalChainBackend,
     PublishedIOICircuitBackend,
     RandomizedPlantedCircuitBackend,
     RealIOITransformerLensBackend,
@@ -20,6 +21,7 @@ from .server.circuit_detective_environment import (
     CircuitDetectiveEnvironment,
     IOI_CAUSAL_DELTA_THRESHOLD,
     PLANTED_CAUSAL_DELTA_THRESHOLD,
+    PLANTED_LITE_CAUSAL_DELTA_THRESHOLD,
     REAL_IOI_CAUSAL_DELTA_THRESHOLD,
 )
 
@@ -159,6 +161,34 @@ PLANTED_USER_PROMPT_VARIANTS = [
     ),
 ]
 
+PLANTED_LITE_SYSTEM_PROMPT = (
+    "You are a mechanistic-interpretability agent in a two-candidate planted "
+    "causal-chain curriculum. The top inspection score is deliberately a decoy. "
+    "Required workflow: call inspect_induction_scores(top_k=2), ablate both "
+    "candidate heads, compare behavior_delta, then call submit_circuit with "
+    "exactly the best_ablated_head_so_far. Do not submit before ablating both "
+    "candidates."
+)
+
+PLANTED_LITE_USER_PROMPT_VARIANTS = [
+    (
+        "Solve the planted-lite causal task. Inspect two candidates, ablate both, "
+        "and submit the candidate with the larger behavior_delta."
+    ),
+    (
+        "The first inspected head is a decoy. Use ablate_head on every candidate "
+        "before submitting best_ablated_head_so_far."
+    ),
+    (
+        "Train the causal chain: inspect candidates, intervene on both heads, "
+        "compare deltas, then submit one verified head."
+    ),
+    (
+        "Do not guess from ranking. Full credit requires ablating both candidate "
+        "heads and submitting the max-delta head."
+    ),
+]
+
 IOI_SYSTEM_PROMPT = (
     "You are a mechanistic-interpretability agent investigating the IOI "
     "name-mover component in GPT-2 small. Inspect candidate head effects, "
@@ -245,6 +275,9 @@ def build_phase1_dataset(repeats_per_prompt: int = 16, *, scenario: str = "phase
     elif scenario in {"ioi", "real_ioi"}:
         system_prompt = IOI_SYSTEM_PROMPT
         user_prompts = IOI_USER_PROMPT_VARIANTS
+    elif scenario == "planted_lite":
+        system_prompt = PLANTED_LITE_SYSTEM_PROMPT
+        user_prompts = PLANTED_LITE_USER_PROMPT_VARIANTS
     elif scenario == "planted":
         system_prompt = PLANTED_SYSTEM_PROMPT
         user_prompts = PLANTED_USER_PROMPT_VARIANTS
@@ -290,6 +323,7 @@ class CircuitDetectiveToolEnv:
         *,
         require_ablation: bool = False,
         causal_delta_threshold: float = CAUSAL_DELTA_THRESHOLD,
+        strict_causal_chain: bool = False,
     ) -> None:
         backend = backend_factory() if backend_factory is not None else get_default_backend()
         self.env = CircuitDetectiveEnvironment(
@@ -299,6 +333,7 @@ class CircuitDetectiveToolEnv:
         )
         self.require_ablation = require_ablation
         self.causal_delta_threshold = causal_delta_threshold
+        self.strict_causal_chain = strict_causal_chain
         self.reward = 0.0
         self.cumulative_reward = 0.0
         self.last_step_reward = 0.0
@@ -423,13 +458,15 @@ class CircuitDetectiveToolEnv:
     def _final_reward(self) -> float:
         """Return the scalar reward consumed by GRPO for the completed rollout."""
         if self.require_ablation and not self.done:
-            return -1.0
+            return -2.0 if self.strict_causal_chain else -1.0
 
         reward = self.cumulative_reward
         if not self.done:
             reward -= 0.35
             if not self.tool_trace:
                 reward -= 0.15
+        if self.strict_causal_chain:
+            return max(min(reward, 4.0), -2.0)
         return max(min(reward, 1.5), -1.0)
 
     def _training_summary(self, reward: float) -> dict[str, Any]:
@@ -548,7 +585,7 @@ class CircuitDetectiveToolEnv:
         is_first_inspect = "inspect_induction_scores" not in self._seen_tools
         reward = self._first_use_reward(
             "inspect_induction_scores",
-            0.08 if self.require_ablation else 0.25,
+            0.02 if self.strict_causal_chain else 0.08 if self.require_ablation else 0.25,
         )
         scores = observation.result.get("scores", [])
         if not isinstance(scores, list) or not scores:
@@ -591,6 +628,8 @@ class CircuitDetectiveToolEnv:
         score = observation.result.get("score", {})
         f1 = float(score.get("f1", 0.0)) if isinstance(score, dict) else 0.0
         if f1 <= 0.0:
+            if self.strict_causal_chain:
+                return -2.0
             if self.require_ablation:
                 return -0.40
             return env_reward + 0.03
@@ -605,6 +644,8 @@ class CircuitDetectiveToolEnv:
         f1 = float(score.get("f1", 0.0)) if isinstance(score, dict) else 0.0
         ground_truth_count = len(self.env.ground_truth_heads())
         if len(submitted) > max(ground_truth_count + 1, 2):
+            if self.strict_causal_chain:
+                return -2.0
             return -0.55
 
         submitted_deltas = [
@@ -613,7 +654,17 @@ class CircuitDetectiveToolEnv:
             if head_id in self._ablation_deltas
         ]
         if not submitted_deltas:
+            if self.strict_causal_chain:
+                return -1.5
             return -0.55
+        if self.strict_causal_chain:
+            phase2 = observation.result.get("phase2", {})
+            ablated_all = bool(phase2.get("ablated_all_candidates", False)) if isinstance(phase2, dict) else False
+            if f1 == 1.0 and ablated_all and max(submitted_deltas) >= self.causal_delta_threshold:
+                return 4.0
+            if f1 == 1.0:
+                return 1.0
+            return -2.0
         if f1 < 1.0:
             return -0.20 + (0.20 * f1)
         if max(submitted_deltas) >= self.causal_delta_threshold:
@@ -682,6 +733,21 @@ class PlantedCircuitToolEnv(CircuitDetectiveToolEnv):
             backend_factory=backend_factory or RandomizedPlantedCircuitBackend,
             require_ablation=True,
             causal_delta_threshold=PLANTED_CAUSAL_DELTA_THRESHOLD,
+        )
+
+
+class PlantedLiteCircuitToolEnv(CircuitDetectiveToolEnv):
+    """TRL tool wrapper for the two-candidate causal-chain curriculum."""
+
+    def __init__(
+        self,
+        backend_factory: Callable[[], CircuitBackend] | None = None,
+    ) -> None:
+        super().__init__(
+            backend_factory=backend_factory or PlantedLiteCausalChainBackend,
+            require_ablation=True,
+            causal_delta_threshold=PLANTED_LITE_CAUSAL_DELTA_THRESHOLD,
+            strict_causal_chain=True,
         )
 
 

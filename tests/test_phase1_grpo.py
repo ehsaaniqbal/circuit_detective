@@ -7,9 +7,15 @@ from circuit_detective.phase1_grpo import CurriculumCircuitToolEnv
 from circuit_detective.phase1_grpo import IOICircuitToolEnv
 from circuit_detective.phase1_grpo import Phase2CircuitDetectiveToolEnv
 from circuit_detective.phase1_grpo import PlantedCircuitToolEnv
+from circuit_detective.phase1_grpo import PlantedLiteCircuitToolEnv
 from circuit_detective.phase1_grpo import RealIOICircuitToolEnv
 from circuit_detective.phase1_grpo import consume_reward_trace, reset_reward_trace, reward_func
-from circuit_detective.server.backend import FakeInductionBackend, Head, RandomizedPlantedCircuitBackend
+from circuit_detective.server.backend import (
+    FakeInductionBackend,
+    Head,
+    PlantedLiteCausalChainBackend,
+    RandomizedPlantedCircuitBackend,
+)
 
 
 def make_env() -> CircuitDetectiveToolEnv:
@@ -23,6 +29,12 @@ def make_phase2_env() -> Phase2CircuitDetectiveToolEnv:
 def make_planted_env(seed: int = 17) -> PlantedCircuitToolEnv:
     return PlantedCircuitToolEnv(
         backend_factory=lambda: RandomizedPlantedCircuitBackend(seed=seed)
+    )
+
+
+def make_planted_lite_env(seed: int = 17) -> PlantedLiteCircuitToolEnv:
+    return PlantedLiteCircuitToolEnv(
+        backend_factory=lambda: PlantedLiteCausalChainBackend(seed=seed)
     )
 
 
@@ -225,6 +237,44 @@ def test_planted_wrapper_rewards_ablate_then_submit_true_target() -> None:
     assert rewards[0] > 1.0
     assert records[0]["causal_success"] is True
     assert records[0]["ablate_submitted"] is True
+
+
+def test_planted_lite_wrapper_rewards_full_causal_chain_only() -> None:
+    reset_reward_trace()
+    env = make_planted_lite_env()
+    env.reset()
+    target = env.env.ground_truth_heads()[0]
+
+    inspect_payload = json.loads(env.inspect_induction_scores(top_k=2))
+    candidates = [str(item["head_id"]) for item in inspect_payload["result"]["scores"]]
+    decoy = Head.parse(candidates[0])
+    planted = Head.parse(target)
+
+    env.ablate_head(layer=decoy.layer, head=decoy.head)
+    env.ablate_head(layer=planted.layer, head=planted.head)
+    env.submit_circuit([target])
+    rewards = reward_func([env])
+    records = consume_reward_trace()
+
+    assert rewards[0] == 4.0
+    assert records[0]["causal_success"] is True
+    assert records[0]["ablate_submitted"] is True
+
+
+def test_planted_lite_no_submit_after_ablation_is_strict_failure() -> None:
+    reset_reward_trace()
+    env = make_planted_lite_env()
+    env.reset()
+    target = env.env.ground_truth_heads()[0]
+
+    inspect_payload = json.loads(env.inspect_induction_scores(top_k=2))
+    decoy = Head.parse(str(inspect_payload["result"]["scores"][0]["head_id"]))
+    planted = Head.parse(target)
+    env.ablate_head(layer=decoy.layer, head=decoy.head)
+    env.ablate_head(layer=planted.layer, head=planted.head)
+    rewards = reward_func([env])
+
+    assert rewards[0] == -2.0
 
 
 def test_ioi_wrapper_handles_multi_head_submission_and_rubric() -> None:

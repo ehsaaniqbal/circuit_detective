@@ -245,6 +245,72 @@ class RandomizedPlantedCircuitBackend:
         return [self._target]
 
 
+class PlantedLiteCausalChainBackend:
+    """
+    Minimal planted-circuit curriculum for learning causal credit assignment.
+
+    The task has exactly two candidate heads. Inspection always ranks a decoy
+    first, while ablation reveals the true planted head. This isolates the
+    missing skill from the harder planted arena: submit the head whose ablation
+    produced the largest causal behavior delta.
+    """
+
+    scenario_id = "planted_lite_causal_chain"
+    max_steps = 5
+    _instance_counter = 0
+
+    def __init__(self, *, seed: int | None = None) -> None:
+        if seed is None:
+            seed = 2026042601 + PlantedLiteCausalChainBackend._instance_counter
+            PlantedLiteCausalChainBackend._instance_counter += 1
+        self._rng = random.Random(seed)
+        self._heads = [Head(layer=layer, head=head) for layer in range(2) for head in range(8)]
+        self._baseline_behavior = 0.82
+        self._target = self._heads[0]
+        self._decoy = self._heads[1]
+        self._scores: list[HeadScore] = []
+        self._deltas: dict[str, float] = {}
+        self.reset_episode()
+
+    def reset_episode(self) -> None:
+        self._target = self._rng.choice(self._heads)
+        candidates = [head for head in self._heads if head != self._target]
+        self._decoy = self._rng.choice(candidates)
+        self._scores = [
+            HeadScore(head=self._decoy, score=0.96),
+            HeadScore(head=self._target, score=0.84),
+        ]
+        self._deltas = {
+            self._decoy.head_id: self._rng.uniform(0.005, 0.035),
+            self._target.head_id: self._rng.uniform(0.42, 0.64),
+        }
+
+    def candidate_heads(self) -> list[Head]:
+        return [self._decoy, self._target]
+
+    def run_probe(self) -> ProbeResult:
+        return ProbeResult(
+            baseline_behavior=self._baseline_behavior,
+            probe_batch_size=4,
+            probe_seq_len=16,
+        )
+
+    def inspect_induction_scores(self, top_k: int = 8) -> list[HeadScore]:
+        return self._scores[:top_k]
+
+    def ablate_head(self, head: Head) -> AblationResult:
+        delta = self._deltas.get(head.head_id, 0.0)
+        return AblationResult(
+            head=head,
+            baseline_behavior=self._baseline_behavior,
+            ablated_behavior=self._baseline_behavior - delta,
+            behavior_delta=delta,
+        )
+
+    def ground_truth_heads(self) -> list[Head]:
+        return [self._target]
+
+
 class PublishedIOICircuitBackend:
     """
     Fast IOI name-mover circuit arena using published GPT-2-small head ids.

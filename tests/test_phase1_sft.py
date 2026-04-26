@@ -13,6 +13,11 @@ assert SPEC.loader is not None
 SPEC.loader.exec_module(phase1_sft)
 
 
+class DummyTokenizer:
+    def apply_chat_template(self, messages, **kwargs):  # type: ignore[no-untyped-def]
+        return "\n".join(message["content"] for message in messages)
+
+
 def test_tool_call_renders_trl_xml_format() -> None:
     rendered = phase1_sft.tool_call("submit_circuit", {"heads": ["L1H6"]})
 
@@ -73,6 +78,57 @@ def test_planted_synthetic_ablation_marks_only_target_as_causal() -> None:
     assert decoy_payload["result"]["causal_verified"] is False
     assert target_payload["result"]["causal_verified"] is True
     assert target_payload["result"]["behavior_delta"] > decoy_payload["result"]["behavior_delta"]
+
+
+def test_planted_lite_synthetic_trace_exposes_two_candidate_causal_chain() -> None:
+    target, decoy = phase1_sft.planted_lite_heads_for_record(0)
+    inspect_payload = json.loads(
+        phase1_sft.synthetic_planted_lite_inspect_response(
+            target_head=target,
+            decoy_head=decoy,
+        )
+    )
+    decoy_payload = json.loads(
+        phase1_sft.synthetic_planted_lite_ablation_response(
+            head_id=decoy,
+            target_head=target,
+            decoy_head=decoy,
+            ablated_heads_so_far=[],
+        )
+    )
+    target_payload = json.loads(
+        phase1_sft.synthetic_planted_lite_ablation_response(
+            head_id=target,
+            target_head=target,
+            decoy_head=decoy,
+            ablated_heads_so_far=[decoy],
+        )
+    )
+
+    assert inspect_payload["scenario_id"] == "planted_lite_causal_chain"
+    assert inspect_payload["result"]["scores"][0]["head_id"] == decoy
+    assert inspect_payload["result"]["scores"][1]["head_id"] == target
+    assert decoy_payload["result"]["best_ablated_head_so_far"] == decoy
+    assert decoy_payload["result"]["must_submit"] is None
+    assert target_payload["result"]["best_ablated_head_so_far"] == target
+    assert target_payload["result"]["must_submit"] == target
+
+
+def test_planted_lite_sft_records_include_full_causal_chain() -> None:
+    records = phase1_sft.build_sft_records(
+        tokenizer=DummyTokenizer(),
+        examples_per_prompt=1,
+        target_head="L1H6",
+        scenario="planted_lite",
+    )
+
+    assert records
+    text = records[0]["text"]
+    assert "inspect_induction_scores" in text
+    assert text.count("<function=ablate_head>") == 2
+    assert "best_ablated_head_so_far" in text
+    assert "must_submit" in text
+    assert "<function=submit_circuit>" in text
 
 
 def test_ioi_synthetic_trace_exposes_multi_head_target() -> None:

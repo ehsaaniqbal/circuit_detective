@@ -4,6 +4,7 @@ from circuit_detective.models import CircuitDetectiveAction
 from circuit_detective.server.backend import (
     FakeInductionBackend,
     Head,
+    PlantedLiteCausalChainBackend,
     PublishedIOICircuitBackend,
     RandomizedPlantedCircuitBackend,
     RealIOITransformerLensBackend,
@@ -12,6 +13,7 @@ from circuit_detective.server.circuit_detective_environment import (
     CircuitDetectiveEnvironment,
     IOI_CAUSAL_DELTA_THRESHOLD,
     PLANTED_CAUSAL_DELTA_THRESHOLD,
+    PLANTED_LITE_CAUSAL_DELTA_THRESHOLD,
 )
 
 
@@ -31,6 +33,14 @@ def make_planted_env(seed: int = 7) -> CircuitDetectiveEnvironment:
         backend=RandomizedPlantedCircuitBackend(seed=seed),
         require_ablation=True,
         causal_delta_threshold=PLANTED_CAUSAL_DELTA_THRESHOLD,
+    )
+
+
+def make_planted_lite_env(seed: int = 7) -> CircuitDetectiveEnvironment:
+    return CircuitDetectiveEnvironment(
+        backend=PlantedLiteCausalChainBackend(seed=seed),
+        require_ablation=True,
+        causal_delta_threshold=PLANTED_LITE_CAUSAL_DELTA_THRESHOLD,
     )
 
 
@@ -173,6 +183,58 @@ def test_planted_env_requires_ablation_of_true_target_not_top_decoy() -> None:
     assert observation.done is True
     assert observation.result["phase2"]["causal_success"] is True
     assert observation.reward > 0.8
+
+
+def test_planted_lite_requires_ablating_both_candidates_then_submitting_max_delta() -> None:
+    env = make_planted_lite_env(seed=19)
+    observation = env.reset()
+    target = env.ground_truth_heads()[0]
+
+    assert observation.scenario_id == "planted_lite_causal_chain"
+    assert observation.remaining_budget == 5
+    assert observation.result["candidate_heads"] == env.candidate_heads()
+    assert len(env.candidate_heads()) == 2
+
+    observation = env.step(
+        CircuitDetectiveAction(
+            tool_name="inspect_induction_scores",
+            arguments={"top_k": 2},
+        )
+    )
+    candidates = [str(item["head_id"]) for item in observation.result["scores"]]
+    assert candidates == env.candidate_heads()
+    assert candidates[0] != target
+
+    decoy = Head.parse(candidates[0])
+    observation = env.step(
+        CircuitDetectiveAction(
+            tool_name="ablate_head",
+            arguments={"layer": decoy.layer, "head": decoy.head},
+        )
+    )
+    assert observation.result["best_ablated_head_so_far"] == candidates[0]
+    assert observation.result["must_submit"] is None
+
+    planted = Head.parse(target)
+    observation = env.step(
+        CircuitDetectiveAction(
+            tool_name="ablate_head",
+            arguments={"layer": planted.layer, "head": planted.head},
+        )
+    )
+    assert observation.result["best_ablated_head_so_far"] == target
+    assert observation.result["must_submit"] == target
+
+    observation = env.step(
+        CircuitDetectiveAction(
+            tool_name="submit_circuit",
+            arguments={"heads": [target]},
+        )
+    )
+    assert observation.done is True
+    assert observation.reward == 4.0
+    assert observation.result["phase2"]["causal_success"] is True
+    assert observation.result["phase2"]["ablated_all_candidates"] is True
 
 
 def test_ioi_env_scores_multi_head_name_mover_submission() -> None:

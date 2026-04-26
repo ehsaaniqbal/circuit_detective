@@ -18,10 +18,12 @@ from .rewards import compute_submission_score
 
 PHASE2_SCENARIO_ID = "l2_ablation_required"
 PLANTED_SCENARIO_ID = "planted_circuit_arena"
+PLANTED_LITE_SCENARIO_ID = "planted_lite_causal_chain"
 IOI_SCENARIO_ID = "ioi_gpt2_small_name_mover"
 REAL_IOI_SCENARIO_ID = "ioi_gpt2_small_real"
 CAUSAL_DELTA_THRESHOLD = 1e-5
 PLANTED_CAUSAL_DELTA_THRESHOLD = 0.10
+PLANTED_LITE_CAUSAL_DELTA_THRESHOLD = 0.10
 IOI_CAUSAL_DELTA_THRESHOLD = 0.10
 REAL_IOI_CAUSAL_DELTA_THRESHOLD = 0.01
 
@@ -54,6 +56,13 @@ class CircuitDetectiveEnvironment(Environment):
         """Return the deterministic answer key for trainer-side diagnostics."""
         return [head.head_id for head in self._backend.ground_truth_heads()]
 
+    def candidate_heads(self) -> list[str]:
+        """Return scenario candidate heads when the backend exposes a candidate set."""
+        candidates = getattr(self._backend, "candidate_heads", None)
+        if callable(candidates):
+            return [head.head_id for head in candidates()]
+        return []
+
     def reset(self) -> CircuitDetectiveObservation:
         reset_episode = getattr(self._backend, "reset_episode", None)
         if callable(reset_episode):
@@ -81,6 +90,16 @@ class CircuitDetectiveEnvironment(Environment):
             goal = (
                 "Submit exactly the IOI name-mover heads as ['LxHy', ...]. "
                 "Ablation is required for causal credit."
+            )
+        elif self._backend.scenario_id == PLANTED_LITE_SCENARIO_ID:
+            summary = (
+                "Planted-Lite Causal Chain: exactly two candidate heads are shown. "
+                "The top inspection score is a decoy. Ablate both candidates, compare "
+                "behavior_delta, then submit the best_ablated_head_so_far."
+            )
+            goal = (
+                "Ablate every candidate returned by inspect_induction_scores(top_k=2). "
+                "Submit exactly the candidate with the largest behavior_delta."
             )
         elif self._backend.scenario_id == PLANTED_SCENARIO_ID:
             summary = (
@@ -116,6 +135,7 @@ class CircuitDetectiveEnvironment(Environment):
                 "scenario": self._backend.scenario_id,
                 "goal": goal,
                 "requires_ablation": self._require_ablation,
+                "candidate_heads": self.candidate_heads(),
             },
             reward=0.0,
             done=False,
@@ -210,23 +230,31 @@ class CircuitDetectiveEnvironment(Environment):
         top_k = int(arguments.get("top_k", 8))
         scores = [item.to_dict() for item in self._backend.inspect_induction_scores(top_k=top_k)]
         self._inspected_heads.update(str(item["head_id"]) for item in scores)
-        summary = (
-            f"Returned the top {len(scores)} real IOI candidate heads ranked by logit-diff ablation delta. "
-            "Use the largest positive deltas before submitting the multi-head circuit."
-            if self._backend.scenario_id == REAL_IOI_SCENARIO_ID
-            else (
-            f"Returned the top {len(scores)} IOI candidate heads ranked by name-mover effect. "
-            "Use ablation evidence before submitting the multi-head circuit."
-            if self._backend.scenario_id == IOI_SCENARIO_ID
-            else (
+        if self._backend.scenario_id == REAL_IOI_SCENARIO_ID:
+            summary = (
+                f"Returned the top {len(scores)} real IOI candidate heads ranked by "
+                "logit-diff ablation delta. Use the largest positive deltas before "
+                "submitting the multi-head circuit."
+            )
+        elif self._backend.scenario_id == IOI_SCENARIO_ID:
+            summary = (
+                f"Returned the top {len(scores)} IOI candidate heads ranked by "
+                "name-mover effect. Use ablation evidence before submitting the "
+                "multi-head circuit."
+            )
+        elif self._backend.scenario_id == PLANTED_LITE_SCENARIO_ID:
+            summary = (
+                f"Returned exactly {len(scores)} planted-lite candidate heads. "
+                "Ablate each candidate, then submit best_ablated_head_so_far."
+            )
+        else:
+            summary = (
                 f"Returned the top {len(scores)} heads ranked by induction score. "
                 "Use the strongest supported head in submit_circuit before the budget ends."
             )
-            )
-        )
         return self._make_observation(
             summary=summary,
-            result={"scores": scores},
+            result={"scores": scores, "candidate_heads": [str(item["head_id"]) for item in scores]},
             reward=0.01,
             done=False,
         )
@@ -243,6 +271,24 @@ class CircuitDetectiveEnvironment(Environment):
                 "causal_verified": result.behavior_delta >= self._causal_delta_threshold,
             }
         )
+        if self._backend.scenario_id == PLANTED_LITE_SCENARIO_ID:
+            best_head = max(self._ablation_deltas, key=self._ablation_deltas.get)
+            candidate_heads = self.candidate_heads()
+            ablated_candidates = [
+                head_id for head_id in candidate_heads if head_id in self._ablation_deltas
+            ]
+            payload.update(
+                {
+                    "candidate_heads": candidate_heads,
+                    "ablated_candidate_heads": ablated_candidates,
+                    "remaining_candidate_heads": [
+                        head_id for head_id in candidate_heads if head_id not in self._ablation_deltas
+                    ],
+                    "best_ablated_head_so_far": best_head,
+                    "best_ablated_delta_so_far": self._ablation_deltas[best_head],
+                    "must_submit": best_head if len(ablated_candidates) == len(candidate_heads) else None,
+                }
+            )
         return self._make_observation(
             summary=f"Ablated L{layer}H{head} and measured the behavior delta.",
             result=payload,
@@ -292,8 +338,21 @@ class CircuitDetectiveEnvironment(Environment):
         ablate_submitted = bool(submitted_ablation_deltas)
         faithful_ablation = max_delta >= self._causal_delta_threshold
         causal_success = f1 == 1.0 and ablate_submitted and faithful_ablation
+        candidate_heads = self.candidate_heads()
+        ablated_all_candidates = bool(candidate_heads) and all(
+            head_id in self._ablation_deltas for head_id in candidate_heads
+        )
 
-        if not self._require_ablation:
+        if self._backend.scenario_id == PLANTED_LITE_SCENARIO_ID:
+            if causal_success and ablated_all_candidates:
+                total_reward = 4.0
+            elif f1 > 0.0 and ablate_submitted:
+                total_reward = 1.0
+            elif f1 > 0.0:
+                total_reward = -1.5
+            else:
+                total_reward = -2.0
+        elif not self._require_ablation:
             total_reward = 0.0
         elif causal_success:
             normalized_steps = min(self._state.step_count / self._backend.max_steps, 1.0)
@@ -313,6 +372,8 @@ class CircuitDetectiveEnvironment(Environment):
             "causal_delta_threshold": self._causal_delta_threshold,
             "faithful_ablation": faithful_ablation,
             "causal_success": causal_success,
+            "candidate_heads": candidate_heads,
+            "ablated_all_candidates": ablated_all_candidates,
             "total_reward": total_reward,
         }
 
@@ -349,6 +410,8 @@ class CircuitDetectiveEnvironment(Environment):
         )
 
     def _scenario_id(self) -> str:
+        if self._backend.scenario_id == PLANTED_LITE_SCENARIO_ID:
+            return PLANTED_LITE_SCENARIO_ID
         if self._backend.scenario_id == PLANTED_SCENARIO_ID:
             return PLANTED_SCENARIO_ID
         if self._backend.scenario_id == IOI_SCENARIO_ID:

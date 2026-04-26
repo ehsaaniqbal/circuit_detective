@@ -8,6 +8,7 @@ from pathlib import Path
 from circuit_detective.phase1_grpo import (
     CircuitDetectiveToolEnv,
     Phase2CircuitDetectiveToolEnv,
+    PlantedCircuitToolEnv,
     build_phase1_dataset,
     consume_reward_trace,
     reward_func,
@@ -32,7 +33,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lora-rank", type=int, default=8)
     parser.add_argument(
         "--scenario",
-        choices=["phase1", "phase2"],
+        choices=["phase1", "phase2", "planted"],
         default="phase1",
         help="Training curriculum level. phase2 requires ablation before full credit.",
     )
@@ -368,9 +369,11 @@ def main() -> None:
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
-        environment_factory=Phase2CircuitDetectiveToolEnv
-        if args.scenario == "phase2"
-        else CircuitDetectiveToolEnv,
+        environment_factory={
+            "phase1": CircuitDetectiveToolEnv,
+            "phase2": Phase2CircuitDetectiveToolEnv,
+            "planted": PlantedCircuitToolEnv,
+        }[args.scenario],
         **trainer_kwargs,
     )
 

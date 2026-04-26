@@ -10,8 +10,11 @@ from circuit_detective.phase1_grpo import (
     PHASE1_USER_PROMPT_VARIANTS,
     PHASE2_SYSTEM_PROMPT,
     PHASE2_USER_PROMPT_VARIANTS,
+    PLANTED_SYSTEM_PROMPT,
+    PLANTED_USER_PROMPT_VARIANTS,
 )
 from circuit_detective.phase1_grpo import CircuitDetectiveToolEnv
+from circuit_detective.server.circuit_detective_environment import PLANTED_CAUSAL_DELTA_THRESHOLD
 
 
 def parse_args() -> argparse.Namespace:
@@ -31,7 +34,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--scenario",
-        choices=["phase1", "phase2"],
+        choices=["phase1", "phase2", "planted"],
         default="phase1",
         help="Warm-start curriculum level. phase2 examples always include ablation.",
     )
@@ -49,6 +52,8 @@ def tool_call(name: str, parameters: dict[str, Any]) -> str:
 
 def synthetic_reset_observation(*, scenario: str) -> str:
     is_phase2 = scenario == "phase2"
+    is_planted = scenario == "planted"
+    remaining_budget = 10 if is_planted else 12
     return json.dumps(
         {
             "available_tools": [
@@ -59,28 +64,145 @@ def synthetic_reset_observation(*, scenario: str) -> str:
                 "submit_circuit",
             ],
             "done": False,
-            "remaining_budget": 12,
+            "remaining_budget": remaining_budget,
             "result": {
                 "goal": (
-                    "Inspect the dominant induction head, ablate that candidate, "
-                    "then submit the verified head as ['LxHy']."
-                    if is_phase2
-                    else "Submit the dominant induction head as ['LxHy']."
+                    "Ablate candidate heads and submit the planted head with the "
+                    "largest behavior delta."
+                    if is_planted
+                    else (
+                        "Inspect the dominant induction head, ablate that candidate, "
+                        "then submit the verified head as ['LxHy']."
+                        if is_phase2
+                        else "Submit the dominant induction head as ['LxHy']."
+                    )
                 ),
-                "requires_ablation": is_phase2,
-                "scenario": "l1_induction_attn_only_2l",
+                "requires_ablation": is_phase2 or is_planted,
+                "scenario": "planted_circuit_arena"
+                if is_planted
+                else "l1_induction_attn_only_2l",
             },
-            "scenario_id": "l2_ablation_required" if is_phase2 else "l1_induction_attn_only_2l",
+            "scenario_id": (
+                "planted_circuit_arena"
+                if is_planted
+                else "l2_ablation_required"
+                if is_phase2
+                else "l1_induction_attn_only_2l"
+            ),
             "step_count": 0,
             "summary": (
                 "Phase 2: localize and causally verify the dominant induction head. "
                 "Use inspect_induction_scores, ablate_head, then submit_circuit."
                 if is_phase2
                 else (
-                    "Phase 1: localize the dominant induction head. "
-                    "Use inspect_induction_scores, then submit_circuit."
+                    "Planted Circuit Arena: score rankings can be decoys. "
+                    "Use ablation to find the true causal head."
+                    if is_planted
+                    else (
+                        "Phase 1: localize the dominant induction head. "
+                        "Use inspect_induction_scores, then submit_circuit."
+                    )
                 )
             ),
+        },
+        sort_keys=True,
+    )
+
+
+def parse_head_id(head_id: str) -> tuple[int, int]:
+    return (
+        int(head_id.split("H", maxsplit=1)[0].removeprefix("L")),
+        int(head_id.split("H", maxsplit=1)[1]),
+    )
+
+
+def all_synthetic_heads() -> list[str]:
+    return [f"L{layer}H{head}" for layer in range(2) for head in range(8)]
+
+
+def planted_heads_for_record(index: int) -> tuple[str, list[str]]:
+    heads = all_synthetic_heads()
+    target = heads[(3 * index + 5) % len(heads)]
+    decoy_one = heads[(5 * index + 1) % len(heads)]
+    decoy_two = heads[(7 * index + 2) % len(heads)]
+    decoys = []
+    for candidate in [decoy_one, decoy_two, *heads]:
+        if candidate != target and candidate not in decoys:
+            decoys.append(candidate)
+        if len(decoys) == 2:
+            break
+    return target, decoys
+
+
+def synthetic_planted_inspect_response(
+    *,
+    target_head: str,
+    decoy_heads: list[str],
+) -> str:
+    scores: list[dict[str, float | int | str]] = []
+    for score, head_id in zip([0.96, 0.88, 0.82], [decoy_heads[0], decoy_heads[1], target_head]):
+        layer, head = parse_head_id(head_id)
+        scores.append(
+            {
+                "head": head,
+                "head_id": head_id,
+                "layer": layer,
+                "score": score,
+            }
+        )
+    return json.dumps(
+        {
+            "available_tools": [
+                "list_tools",
+                "run_probe",
+                "inspect_induction_scores",
+                "ablate_head",
+                "submit_circuit",
+            ],
+            "done": False,
+            "remaining_budget": 9,
+            "result": {"scores": scores},
+            "scenario_id": "planted_circuit_arena",
+            "step_count": 1,
+            "summary": (
+                "Returned noisy planted-arena scores. The top-ranked head may be a decoy; "
+                "use ablation deltas before submitting."
+            ),
+        },
+        sort_keys=True,
+    )
+
+
+def synthetic_planted_ablation_response(
+    *,
+    head_id: str,
+    is_target: bool,
+) -> str:
+    layer, head = parse_head_id(head_id)
+    delta = 0.47 if is_target else 0.018
+    causal_verified = delta >= PLANTED_CAUSAL_DELTA_THRESHOLD
+    return json.dumps(
+        {
+            "available_tools": [
+                "list_tools",
+                "run_probe",
+                "inspect_induction_scores",
+                "ablate_head",
+                "submit_circuit",
+            ],
+            "done": False,
+            "remaining_budget": 8,
+            "result": {
+                "ablated_head": head_id,
+                "behavior_delta": delta,
+                "causal_delta_threshold": PLANTED_CAUSAL_DELTA_THRESHOLD,
+                "causal_verified": causal_verified,
+                "head": head,
+                "layer": layer,
+            },
+            "scenario_id": "planted_circuit_arena",
+            "step_count": 2,
+            "summary": f"Ablated {head_id}; behavior_delta={delta}.",
         },
         sort_keys=True,
     )
@@ -172,15 +294,90 @@ def build_sft_records(
     target_head_index = int(target_head.split("H", maxsplit=1)[1])
 
     records: list[dict[str, str]] = []
-    if scenario == "phase2":
+    if scenario == "planted":
+        system_prompt = PLANTED_SYSTEM_PROMPT
+        user_prompts = PLANTED_USER_PROMPT_VARIANTS
+    elif scenario == "phase2":
         system_prompt = PHASE2_SYSTEM_PROMPT
         user_prompts = PHASE2_USER_PROMPT_VARIANTS
     else:
         system_prompt = PHASE1_SYSTEM_PROMPT
         user_prompts = PHASE1_USER_PROMPT_VARIANTS
 
+    record_index = 0
     for user_prompt in user_prompts:
         for repeat in range(examples_per_prompt):
+            if scenario == "planted":
+                planted_target, planted_decoys = planted_heads_for_record(record_index)
+                planted_inspect = synthetic_planted_inspect_response(
+                    target_head=planted_target,
+                    decoy_heads=planted_decoys,
+                )
+                messages = [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": f"{user_prompt}\n{reset_observation}"},
+                    {
+                        "role": "assistant",
+                        "content": tool_call("inspect_induction_scores", {"top_k": 3}),
+                    },
+                    {"role": "user", "content": f"<tool_response>\n{planted_inspect}\n</tool_response>"},
+                ]
+                for decoy in planted_decoys:
+                    decoy_layer, decoy_head = parse_head_id(decoy)
+                    messages.extend(
+                        [
+                            {
+                                "role": "assistant",
+                                "content": tool_call(
+                                    "ablate_head",
+                                    {"layer": decoy_layer, "head": decoy_head},
+                                ),
+                            },
+                            {
+                                "role": "user",
+                                "content": (
+                                    "<tool_response>\n"
+                                    f"{synthetic_planted_ablation_response(head_id=decoy, is_target=False)}\n"
+                                    "</tool_response>"
+                                ),
+                            },
+                        ]
+                    )
+                planted_layer, planted_head = parse_head_id(planted_target)
+                messages.extend(
+                    [
+                        {
+                            "role": "assistant",
+                            "content": tool_call(
+                                "ablate_head",
+                                {"layer": planted_layer, "head": planted_head},
+                            ),
+                        },
+                        {
+                            "role": "user",
+                            "content": (
+                                "<tool_response>\n"
+                                f"{synthetic_planted_ablation_response(head_id=planted_target, is_target=True)}\n"
+                                "</tool_response>"
+                            ),
+                        },
+                        {
+                            "role": "assistant",
+                            "content": tool_call("submit_circuit", {"heads": [planted_target]}),
+                        },
+                    ]
+                )
+                text = tokenizer.apply_chat_template(
+                    messages,
+                    tools=tools,
+                    tokenize=False,
+                    add_generation_prompt=False,
+                    chat_template_kwargs={"enable_thinking": False},
+                )
+                records.append({"text": text})
+                record_index += 1
+                continue
+
             use_ablation = scenario == "phase2" or repeat % 2 == 1
             messages: list[dict[str, str]] = [
                 {"role": "system", "content": system_prompt},

@@ -5,6 +5,7 @@ from __future__ import annotations
 import atexit
 import json
 import os
+import random
 import subprocess
 from dataclasses import dataclass
 from functools import lru_cache
@@ -167,6 +168,80 @@ class FakeInductionBackend:
 
     def ground_truth_heads(self) -> list[Head]:
         return [self._scores[0].head]
+
+
+class RandomizedPlantedCircuitBackend:
+    """
+    Synthetic planted-circuit arena with exact ground truth.
+
+    Each episode samples a hidden target head and a high-scoring decoy. Inspection
+    scores are deliberately misleading; ablation deltas reveal the causal head.
+    This is intended for curriculum training, not as a claim about a real model.
+    """
+
+    scenario_id = "planted_circuit_arena"
+    max_steps = 10
+    _instance_counter = 0
+
+    def __init__(self, *, seed: int | None = None) -> None:
+        if seed is None:
+            seed = 20260426 + RandomizedPlantedCircuitBackend._instance_counter
+            RandomizedPlantedCircuitBackend._instance_counter += 1
+        self._rng = random.Random(seed)
+        self._heads = [Head(layer=layer, head=head) for layer in range(2) for head in range(8)]
+        self._baseline_behavior = 0.82
+        self._target = self._heads[0]
+        self._scores: list[HeadScore] = []
+        self._deltas: dict[str, float] = {}
+        self.reset_episode()
+
+    def reset_episode(self) -> None:
+        self._target = self._rng.choice(self._heads)
+        candidates = [head for head in self._heads if head != self._target]
+        decoy = self._rng.choice(candidates)
+        distractors = [head for head in candidates if head != decoy]
+        self._rng.shuffle(distractors)
+
+        target_rank = self._rng.choice([1, 2])
+        ranked_heads = [decoy]
+        if target_rank == 1:
+            ranked_heads.append(self._target)
+            ranked_heads.extend(distractors[:6])
+        else:
+            ranked_heads.append(distractors[0])
+            ranked_heads.append(self._target)
+            ranked_heads.extend(distractors[1:6])
+
+        score_by_rank = [0.96, 0.88, 0.82, 0.64, 0.57, 0.49, 0.41, 0.35]
+        self._scores = [
+            HeadScore(head=head, score=score_by_rank[index])
+            for index, head in enumerate(ranked_heads[: len(score_by_rank)])
+        ]
+        self._deltas = {head.head_id: self._rng.uniform(0.0, 0.025) for head in self._heads}
+        self._deltas[decoy.head_id] = self._rng.uniform(0.005, 0.035)
+        self._deltas[self._target.head_id] = self._rng.uniform(0.38, 0.62)
+
+    def run_probe(self) -> ProbeResult:
+        return ProbeResult(
+            baseline_behavior=self._baseline_behavior,
+            probe_batch_size=8,
+            probe_seq_len=24,
+        )
+
+    def inspect_induction_scores(self, top_k: int = 8) -> list[HeadScore]:
+        return self._scores[:top_k]
+
+    def ablate_head(self, head: Head) -> AblationResult:
+        delta = self._deltas.get(head.head_id, 0.0)
+        return AblationResult(
+            head=head,
+            baseline_behavior=self._baseline_behavior,
+            ablated_behavior=self._baseline_behavior - delta,
+            behavior_delta=delta,
+        )
+
+    def ground_truth_heads(self) -> list[Head]:
+        return [self._target]
 
 
 class TransformerLensSubprocessBackend:

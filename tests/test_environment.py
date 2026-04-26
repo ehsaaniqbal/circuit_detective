@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 from circuit_detective.models import CircuitDetectiveAction
-from circuit_detective.server.backend import FakeInductionBackend
-from circuit_detective.server.circuit_detective_environment import CircuitDetectiveEnvironment
+from circuit_detective.server.backend import FakeInductionBackend, Head, RandomizedPlantedCircuitBackend
+from circuit_detective.server.circuit_detective_environment import (
+    CircuitDetectiveEnvironment,
+    PLANTED_CAUSAL_DELTA_THRESHOLD,
+)
 
 
 def make_env() -> CircuitDetectiveEnvironment:
@@ -13,6 +16,14 @@ def make_phase2_env() -> CircuitDetectiveEnvironment:
     return CircuitDetectiveEnvironment(
         backend=FakeInductionBackend(),
         require_ablation=True,
+    )
+
+
+def make_planted_env(seed: int = 7) -> CircuitDetectiveEnvironment:
+    return CircuitDetectiveEnvironment(
+        backend=RandomizedPlantedCircuitBackend(seed=seed),
+        require_ablation=True,
+        causal_delta_threshold=PLANTED_CAUSAL_DELTA_THRESHOLD,
     )
 
 
@@ -86,6 +97,65 @@ def test_phase2_correct_submit_after_ablation_gets_full_credit() -> None:
 
     assert observation.done is True
     assert observation.result["phase2"]["ablate_submitted"] is True
+    assert observation.result["phase2"]["causal_success"] is True
+    assert observation.reward > 0.8
+
+
+def test_planted_backend_ranks_decoy_above_target_but_ablation_reveals_target() -> None:
+    backend = RandomizedPlantedCircuitBackend(seed=11)
+
+    target = backend.ground_truth_heads()[0]
+    scores = backend.inspect_induction_scores(top_k=3)
+    decoy = scores[0].head
+
+    assert decoy != target
+    assert target in [score.head for score in scores]
+    assert backend.ablate_head(decoy).behavior_delta < PLANTED_CAUSAL_DELTA_THRESHOLD
+    assert backend.ablate_head(target).behavior_delta >= PLANTED_CAUSAL_DELTA_THRESHOLD
+
+
+def test_planted_env_requires_ablation_of_true_target_not_top_decoy() -> None:
+    env = make_planted_env(seed=13)
+    observation = env.reset()
+    target = env.ground_truth_heads()[0]
+
+    assert observation.scenario_id == "planted_circuit_arena"
+    assert observation.remaining_budget == 10
+
+    observation = env.step(
+        CircuitDetectiveAction(
+            tool_name="inspect_induction_scores",
+            arguments={"top_k": 3},
+        )
+    )
+    top_head = str(observation.result["scores"][0]["head_id"])
+    assert top_head != target
+
+    top = Head.parse(top_head)
+    observation = env.step(
+        CircuitDetectiveAction(
+            tool_name="ablate_head",
+            arguments={"layer": top.layer, "head": top.head},
+        )
+    )
+    assert observation.result["causal_verified"] is False
+
+    planted = Head.parse(target)
+    observation = env.step(
+        CircuitDetectiveAction(
+            tool_name="ablate_head",
+            arguments={"layer": planted.layer, "head": planted.head},
+        )
+    )
+    assert observation.result["causal_verified"] is True
+
+    observation = env.step(
+        CircuitDetectiveAction(
+            tool_name="submit_circuit",
+            arguments={"heads": [target]},
+        )
+    )
+    assert observation.done is True
     assert observation.result["phase2"]["causal_success"] is True
     assert observation.reward > 0.8
 

@@ -4,8 +4,9 @@ import json
 
 from circuit_detective.phase1_grpo import CircuitDetectiveToolEnv
 from circuit_detective.phase1_grpo import Phase2CircuitDetectiveToolEnv
+from circuit_detective.phase1_grpo import PlantedCircuitToolEnv
 from circuit_detective.phase1_grpo import consume_reward_trace, reset_reward_trace, reward_func
-from circuit_detective.server.backend import FakeInductionBackend
+from circuit_detective.server.backend import FakeInductionBackend, Head, RandomizedPlantedCircuitBackend
 
 
 def make_env() -> CircuitDetectiveToolEnv:
@@ -14,6 +15,12 @@ def make_env() -> CircuitDetectiveToolEnv:
 
 def make_phase2_env() -> Phase2CircuitDetectiveToolEnv:
     return Phase2CircuitDetectiveToolEnv(backend_factory=FakeInductionBackend)
+
+
+def make_planted_env(seed: int = 17) -> PlantedCircuitToolEnv:
+    return PlantedCircuitToolEnv(
+        backend_factory=lambda: RandomizedPlantedCircuitBackend(seed=seed)
+    )
 
 
 def test_wrapper_reset_returns_json_observation() -> None:
@@ -158,3 +165,30 @@ def test_phase2_reward_func_records_causal_diagnostics() -> None:
     assert records[0]["causal_success"] is True
     assert records[0]["ablate_submitted"] is True
     assert records[0]["ablation_faithfulness"] > 0.0
+
+
+def test_planted_wrapper_rewards_ablate_then_submit_true_target() -> None:
+    reset_reward_trace()
+    env = make_planted_env()
+    env.reset()
+    target = env.env.ground_truth_heads()[0]
+
+    inspect_payload = json.loads(env.inspect_induction_scores(top_k=3))
+    decoy = Head.parse(str(inspect_payload["result"]["scores"][0]["head_id"]))
+    planted = Head.parse(target)
+
+    assert decoy.head_id != target
+
+    decoy_payload = json.loads(env.ablate_head(layer=decoy.layer, head=decoy.head))
+    assert decoy_payload["result"]["causal_verified"] is False
+
+    target_payload = json.loads(env.ablate_head(layer=planted.layer, head=planted.head))
+    assert target_payload["result"]["causal_verified"] is True
+
+    env.submit_circuit([target])
+    rewards = reward_func([env])
+    records = consume_reward_trace()
+
+    assert rewards[0] > 1.0
+    assert records[0]["causal_success"] is True
+    assert records[0]["ablate_submitted"] is True

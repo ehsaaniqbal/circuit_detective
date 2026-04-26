@@ -17,7 +17,9 @@ from .rewards import compute_submission_score
 
 
 PHASE2_SCENARIO_ID = "l2_ablation_required"
+PLANTED_SCENARIO_ID = "planted_circuit_arena"
 CAUSAL_DELTA_THRESHOLD = 1e-5
+PLANTED_CAUSAL_DELTA_THRESHOLD = 0.10
 
 
 class CircuitDetectiveEnvironment(Environment):
@@ -49,11 +51,23 @@ class CircuitDetectiveEnvironment(Environment):
         return [head.head_id for head in self._backend.ground_truth_heads()]
 
     def reset(self) -> CircuitDetectiveObservation:
+        reset_episode = getattr(self._backend, "reset_episode", None)
+        if callable(reset_episode):
+            reset_episode()
         self._state = State(episode_id=str(uuid4()), step_count=0)
         self._submitted_heads = []
         self._inspected_heads = set()
         self._ablation_deltas = {}
-        if self._require_ablation:
+        if self._backend.scenario_id == PLANTED_SCENARIO_ID:
+            summary = (
+                "Planted Circuit Arena: inspect scores are noisy and may rank a decoy first. "
+                "Use ablation to find the causally planted head, then submit_circuit."
+            )
+            goal = (
+                "Do not trust ranking alone. Ablate candidate heads and submit the head "
+                "with the largest causal behavior delta."
+            )
+        elif self._require_ablation:
             summary = (
                 "Phase 2: localize the dominant induction head, causally verify it "
                 "with ablate_head, then submit_circuit. Correct submissions receive "
@@ -279,7 +293,7 @@ class CircuitDetectiveEnvironment(Environment):
         return CircuitDetectiveObservation(
             summary=summary,
             result=result,
-            scenario_id=PHASE2_SCENARIO_ID if self._require_ablation else self._backend.scenario_id,
+            scenario_id=self._scenario_id(),
             step_count=self._state.step_count,
             remaining_budget=remaining_budget,
             available_tools=[
@@ -298,3 +312,10 @@ class CircuitDetectiveEnvironment(Environment):
                 "requires_ablation": self._require_ablation,
             },
         )
+
+    def _scenario_id(self) -> str:
+        if self._backend.scenario_id == PLANTED_SCENARIO_ID:
+            return PLANTED_SCENARIO_ID
+        if self._require_ablation:
+            return PHASE2_SCENARIO_ID
+        return self._backend.scenario_id

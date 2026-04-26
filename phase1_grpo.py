@@ -7,10 +7,11 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 from .models import CircuitDetectiveAction
-from .server.backend import CircuitBackend, get_default_backend
+from .server.backend import CircuitBackend, RandomizedPlantedCircuitBackend, get_default_backend
 from .server.circuit_detective_environment import (
     CAUSAL_DELTA_THRESHOLD,
     CircuitDetectiveEnvironment,
+    PLANTED_CAUSAL_DELTA_THRESHOLD,
 )
 
 if TYPE_CHECKING:
@@ -107,6 +108,48 @@ PHASE2_USER_PROMPT_VARIANTS = [
     ),
 ]
 
+PLANTED_SYSTEM_PROMPT = (
+    "You are a mechanistic-interpretability agent in a planted circuit arena. "
+    "Inspection scores are noisy and may rank a decoy head first. You must use "
+    "ablate_head to test candidates, then submit the head with the largest "
+    "causal behavior delta. Do not submit based on score ranking alone."
+)
+
+PLANTED_USER_PROMPT_VARIANTS = [
+    (
+        "Find the planted causal head. Scores may contain a decoy, so ablate "
+        "candidate heads before submitting."
+    ),
+    (
+        "This episode has one hidden planted circuit. Use inspection and ablation "
+        "to identify the true causal head."
+    ),
+    (
+        "Do not trust the top score. Intervene on candidate heads and submit the "
+        "one whose ablation causes the largest behavior drop."
+    ),
+    (
+        "Investigate the randomized planted circuit arena. Use ablate_head to "
+        "separate decoys from the true target."
+    ),
+    (
+        "Find the causal component in this synthetic transformer lab. Full credit "
+        "requires submitting the ablated head with real behavior impact."
+    ),
+    (
+        "Scores are only hints in this task. Test the likely heads with ablation "
+        "and submit the verified planted head."
+    ),
+    (
+        "Solve the planted circuit challenge: inspect, ablate candidates, compare "
+        "behavior deltas, then submit one head."
+    ),
+    (
+        "Use the tools like a circuit detective. The top-ranked head can be a "
+        "decoy; the true answer is revealed by causal intervention."
+    ),
+]
+
 _REWARD_TRACE: list[dict[str, Any]] = []
 
 
@@ -135,7 +178,10 @@ def build_phase1_dataset(repeats_per_prompt: int = 16, *, scenario: str = "phase
     prompts: list[list[dict[str, str]]] = []
     variant_ids: list[int] = []
 
-    if scenario == "phase2":
+    if scenario == "planted":
+        system_prompt = PLANTED_SYSTEM_PROMPT
+        user_prompts = PLANTED_USER_PROMPT_VARIANTS
+    elif scenario == "phase2":
         system_prompt = PHASE2_SYSTEM_PROMPT
         user_prompts = PHASE2_USER_PROMPT_VARIANTS
     else:
@@ -176,13 +222,16 @@ class CircuitDetectiveToolEnv:
         backend_factory: Callable[[], CircuitBackend] | None = None,
         *,
         require_ablation: bool = False,
+        causal_delta_threshold: float = CAUSAL_DELTA_THRESHOLD,
     ) -> None:
         backend = backend_factory() if backend_factory is not None else get_default_backend()
         self.env = CircuitDetectiveEnvironment(
             backend=backend,
             require_ablation=require_ablation,
+            causal_delta_threshold=causal_delta_threshold,
         )
         self.require_ablation = require_ablation
+        self.causal_delta_threshold = causal_delta_threshold
         self.reward = 0.0
         self.cumulative_reward = 0.0
         self.last_step_reward = 0.0
@@ -334,7 +383,7 @@ class CircuitDetectiveToolEnv:
         causal_success = (
             terminal_score.get("f1", 0.0) == 1.0
             and ablate_submitted
-            and max_submitted_delta >= CAUSAL_DELTA_THRESHOLD
+            and max_submitted_delta >= self.causal_delta_threshold
         )
         return {
             "reward": reward,
@@ -436,7 +485,7 @@ class CircuitDetectiveToolEnv:
         ]
         if not submitted_deltas:
             return -0.45
-        if max(submitted_deltas) >= CAUSAL_DELTA_THRESHOLD:
+        if max(submitted_deltas) >= self.causal_delta_threshold:
             bonus = 0.70
             if submitted and self._best_seen_head in submitted:
                 bonus += 0.15
@@ -488,4 +537,18 @@ class Phase2CircuitDetectiveToolEnv(CircuitDetectiveToolEnv):
         super().__init__(
             backend_factory=backend_factory,
             require_ablation=True,
+        )
+
+
+class PlantedCircuitToolEnv(CircuitDetectiveToolEnv):
+    """TRL tool wrapper for randomized planted-circuit episodes."""
+
+    def __init__(
+        self,
+        backend_factory: Callable[[], CircuitBackend] | None = None,
+    ) -> None:
+        super().__init__(
+            backend_factory=backend_factory or RandomizedPlantedCircuitBackend,
+            require_ablation=True,
+            causal_delta_threshold=PLANTED_CAUSAL_DELTA_THRESHOLD,
         )

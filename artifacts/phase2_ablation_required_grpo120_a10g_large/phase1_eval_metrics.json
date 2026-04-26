@@ -1,0 +1,366 @@
+{
+  "after": {
+    "eval_after_ablate_rate": 0.125,
+    "eval_after_ablate_submitted_rate": 0.0,
+    "eval_after_causal_success_rate": 0.0,
+    "eval_after_inspect_rate": 1.0,
+    "eval_after_loss": 0.027575472369790077,
+    "eval_after_mean_ablation_faithfulness": 0.0,
+    "eval_after_mean_f1": 0.8333333333333334,
+    "eval_after_mean_reward": 0.5302083333333333,
+    "eval_after_mean_terminal_reward": 0.2489583333333333,
+    "eval_after_mean_tool_calls": 2.0208333333333335,
+    "eval_after_model_preparation_time": 0.0215,
+    "eval_after_probe_rate": 0.0,
+    "eval_after_rollouts": 48.0,
+    "eval_after_runtime": 408.3077,
+    "eval_after_sample_rollouts": [
+      {
+        "ablate_submitted": false,
+        "ablated_heads": [],
+        "ablation_faithfulness": 0.0,
+        "best_seen_head": "L1H6",
+        "causal_success": false,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 0.6,
+        "submitted": true,
+        "submitted_heads": [
+          "L1H6"
+        ],
+        "terminal_reward": 0.3,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_heads": [],
+        "ablation_faithfulness": 0.0,
+        "best_seen_head": "L1H6",
+        "causal_success": false,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 0.6,
+        "submitted": true,
+        "submitted_heads": [
+          "L1H6"
+        ],
+        "terminal_reward": 0.3,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_heads": [],
+        "ablation_faithfulness": 0.0,
+        "best_seen_head": "L1H6",
+        "causal_success": false,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 0.6,
+        "submitted": true,
+        "submitted_heads": [
+          "L1H6"
+        ],
+        "terminal_reward": 0.3,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_heads": [
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.0,
+        "best_seen_head": "L1H6",
+        "causal_success": false,
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.20000000000000007,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_heads": [],
+        "ablation_faithfulness": 0.0,
+        "best_seen_head": "L1H6",
+        "causal_success": false,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 0.6,
+        "submitted": true,
+        "submitted_heads": [
+          "L1H6"
+        ],
+        "terminal_reward": 0.3,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_heads": [
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.0,
+        "best_seen_head": "L1H6",
+        "causal_success": false,
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.20000000000000007,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_heads": [],
+        "ablation_faithfulness": 0.0,
+        "best_seen_head": "L1H6",
+        "causal_success": false,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 0.6,
+        "submitted": true,
+        "submitted_heads": [
+          "L1H6"
+        ],
+        "terminal_reward": 0.3,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_heads": [],
+        "ablation_faithfulness": 0.0,
+        "best_seen_head": "L1H6",
+        "causal_success": false,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 0.6,
+        "submitted": true,
+        "submitted_heads": [
+          "L1H6"
+        ],
+        "terminal_reward": 0.3,
+        "tool_calls": 2,
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      }
+    ],
+    "eval_after_samples_per_second": 0.029,
+    "eval_after_steps_per_second": 0.007,
+    "eval_after_submit_rate": 0.8541666666666666,
+    "eval_after_success_rate": 0.8333333333333334
+  },
+  "before": {
+    "eval_before_ablate_rate": 0.8125,
+    "eval_before_ablate_submitted_rate": 0.020833333333333332,
+    "eval_before_causal_success_rate": 0.0,
+    "eval_before_inspect_rate": 1.0,
+    "eval_before_loss": 0.10387209057807922,
+    "eval_before_mean_ablation_faithfulness": 0.00020648113180262348,
+    "eval_before_mean_f1": 0.14583333333333334,
+    "eval_before_mean_reward": 0.23750000000000004,
+    "eval_before_mean_terminal_reward": 0.046875,
+    "eval_before_mean_tool_calls": 2.0416666666666665,
+    "eval_before_model_preparation_time": 0.0215,
+    "eval_before_probe_rate": 0.0,
+    "eval_before_rollouts": 48.0,
+    "eval_before_runtime": 574.9155,
+    "eval_before_sample_rollouts": [
+      {
+        "ablate_submitted": false,
+        "ablated_heads": [
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.0,
+        "best_seen_head": "L1H6",
+        "causal_success": false,
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.20000000000000007,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_heads": [
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.0,
+        "best_seen_head": "L1H6",
+        "causal_success": false,
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.20000000000000007,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_heads": [
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.0,
+        "best_seen_head": "L1H6",
+        "causal_success": false,
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.20000000000000007,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_heads": [
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.0,
+        "best_seen_head": "L1H6",
+        "causal_success": false,
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.20000000000000007,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_heads": [
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.0,
+        "best_seen_head": "L1H6",
+        "causal_success": false,
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.20000000000000007,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_heads": [
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.0,
+        "best_seen_head": "L1H6",
+        "causal_success": false,
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.20000000000000007,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_heads": [
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.0,
+        "best_seen_head": "L1H6",
+        "causal_success": false,
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.20000000000000007,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_heads": [
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.0,
+        "best_seen_head": "L1H6",
+        "causal_success": false,
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": 0.20000000000000007,
+        "submitted": false,
+        "submitted_heads": [],
+        "terminal_reward": 0.0,
+        "tool_calls": 2,
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      }
+    ],
+    "eval_before_samples_per_second": 0.021,
+    "eval_before_steps_per_second": 0.005,
+    "eval_before_submit_rate": 0.14583333333333334,
+    "eval_before_success_rate": 0.14583333333333334
+  }
+}

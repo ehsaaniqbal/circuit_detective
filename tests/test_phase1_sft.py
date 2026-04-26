@@ -85,3 +85,21 @@ def test_ioi_synthetic_trace_exposes_multi_head_target() -> None:
     assert set(phase1_sft.ioi_target_heads()).issubset(ranked)
     assert inspect_payload["scenario_id"] == "ioi_gpt2_small_name_mover"
     assert ablation_payload["result"]["causal_verified"] is True
+
+
+def test_real_ioi_synthetic_trace_matches_observed_backend_ranking() -> None:
+    inspect_payload = json.loads(
+        phase1_sft.synthetic_ioi_inspect_response(scenario_id="ioi_gpt2_small_real")
+    )
+    ablation_payload = json.loads(
+        phase1_sft.synthetic_ioi_ablation_response("L9H9", scenario_id="ioi_gpt2_small_real")
+    )
+
+    ranked = [item["head_id"] for item in inspect_payload["result"]["scores"]]
+
+    assert ranked[0] == "L8H10"
+    assert set(phase1_sft.ioi_target_heads()).issubset(ranked)
+    assert phase1_sft.real_ioi_expert_ablation_heads()[0] == "L8H10"
+    assert inspect_payload["scenario_id"] == "ioi_gpt2_small_real"
+    assert ablation_payload["result"]["causal_delta_threshold"] == 0.01
+    assert ablation_payload["result"]["causal_verified"] is True

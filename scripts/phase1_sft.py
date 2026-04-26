@@ -259,17 +259,44 @@ def ioi_target_heads() -> list[str]:
     return ["L9H9", "L9H6", "L10H0"]
 
 
+def real_ioi_expert_ablation_heads() -> list[str]:
+    """Heads an expert trace should test in the real GPT-2 IOI backend."""
+    return ["L8H10", "L10H0", "L9H9", "L9H6"]
+
+
 def synthetic_ioi_inspect_response(*, scenario_id: str = "ioi_gpt2_small_name_mover") -> str:
-    ranked_heads = [
-        ("L9H9", 0.97),
-        ("L10H0", 0.94),
-        ("L9H6", 0.92),
-        ("L10H10", 0.74),
-        ("L10H6", 0.71),
-        ("L7H3", 0.68),
-        ("L8H10", 0.65),
-        ("L10H7", 0.61),
-    ]
+    if scenario_id == "ioi_gpt2_small_real":
+        ranked_heads = [
+            ("L8H10", 0.6778),
+            ("L8H6", 0.5857),
+            ("L9H7", 0.3173),
+            ("L7H3", 0.2739),
+            ("L10H0", 0.2103),
+            ("L10H6", 0.1353),
+            ("L9H9", 0.1215),
+            ("L10H10", -0.0033),
+            ("L9H6", -0.0120),
+            ("L10H7", -0.0190),
+            ("L8H11", -0.0250),
+            ("L7H9", -0.0310),
+        ]
+        summary = (
+            "Returned real GPT-2 IOI ablation effects. The largest single-head "
+            "effect is not the complete name-mover circuit; test and submit the "
+            "name-mover heads."
+        )
+    else:
+        ranked_heads = [
+            ("L9H9", 0.97),
+            ("L10H0", 0.94),
+            ("L9H6", 0.92),
+            ("L10H10", 0.74),
+            ("L10H6", 0.71),
+            ("L7H3", 0.68),
+            ("L8H10", 0.65),
+            ("L10H7", 0.61),
+        ]
+        summary = "Returned candidate IOI head effects for the name-mover component."
     scores = []
     for head_id, score in ranked_heads:
         layer, head = parse_head_id(head_id)
@@ -295,7 +322,7 @@ def synthetic_ioi_inspect_response(*, scenario_id: str = "ioi_gpt2_small_name_mo
             "result": {"scores": scores},
             "scenario_id": scenario_id,
             "step_count": 1,
-            "summary": "Returned candidate IOI head effects for the name-mover component.",
+            "summary": summary,
         },
         sort_keys=True,
     )
@@ -307,7 +334,17 @@ def synthetic_ioi_ablation_response(
     scenario_id: str = "ioi_gpt2_small_name_mover",
 ) -> str:
     layer, head = parse_head_id(head_id)
-    delta = {"L9H9": 0.34, "L10H0": 0.31, "L9H6": 0.29}.get(head_id, 0.02)
+    if scenario_id == "ioi_gpt2_small_real":
+        threshold = 0.01
+        delta = {
+            "L8H10": 0.6778,
+            "L10H0": 0.2103,
+            "L9H9": 0.1215,
+            "L9H6": 0.0180,
+        }.get(head_id, -0.01)
+    else:
+        threshold = 0.10
+        delta = {"L9H9": 0.34, "L10H0": 0.31, "L9H6": 0.29}.get(head_id, 0.02)
     return json.dumps(
         {
             "available_tools": [
@@ -322,8 +359,8 @@ def synthetic_ioi_ablation_response(
             "result": {
                 "ablated_head": head_id,
                 "behavior_delta": delta,
-                "causal_delta_threshold": 0.10,
-                "causal_verified": delta >= 0.10,
+                "causal_delta_threshold": threshold,
+                "causal_verified": delta >= threshold,
                 "head": head,
                 "layer": layer,
             },
@@ -511,12 +548,18 @@ def build_sft_records(
                     if record_scenario == "real_ioi"
                     else "ioi_gpt2_small_name_mover"
                 )
+                inspect_top_k = 12 if record_scenario == "real_ioi" else 8
+                ablation_heads = (
+                    real_ioi_expert_ablation_heads()
+                    if record_scenario == "real_ioi"
+                    else ioi_target_heads()
+                )
                 messages = [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": f"{user_prompt}\n{reset_observation}"},
                     {
                         "role": "assistant",
-                        "content": tool_call("inspect_induction_scores", {"top_k": 8}),
+                        "content": tool_call("inspect_induction_scores", {"top_k": inspect_top_k}),
                     },
                     {
                         "role": "user",
@@ -527,7 +570,7 @@ def build_sft_records(
                         ),
                     },
                 ]
-                for head_id in ioi_target_heads():
+                for head_id in ablation_heads:
                     layer, head = parse_head_id(head_id)
                     messages.extend(
                         [

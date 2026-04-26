@@ -422,9 +422,12 @@ class CircuitDetectiveToolEnv:
 
     def _final_reward(self) -> float:
         """Return the scalar reward consumed by GRPO for the completed rollout."""
+        if self.require_ablation and not self.done:
+            return -1.0
+
         reward = self.cumulative_reward
         if not self.done:
-            reward -= 1.05 if self.require_ablation else 0.35
+            reward -= 0.35
             if not self.tool_trace:
                 reward -= 0.15
         return max(min(reward, 1.5), -1.0)
@@ -543,7 +546,10 @@ class CircuitDetectiveToolEnv:
 
     def _inspect_reward(self, observation: Any) -> float:
         is_first_inspect = "inspect_induction_scores" not in self._seen_tools
-        reward = self._first_use_reward("inspect_induction_scores", 0.25)
+        reward = self._first_use_reward(
+            "inspect_induction_scores",
+            0.08 if self.require_ablation else 0.25,
+        )
         scores = observation.result.get("scores", [])
         if not isinstance(scores, list) or not scores:
             return reward
@@ -552,7 +558,7 @@ class CircuitDetectiveToolEnv:
         self._best_seen_head = top_head
         ground_truth = set(self.env.ground_truth_heads())
         if is_first_inspect and top_head in ground_truth:
-            reward += 0.10
+            reward += 0.02 if self.require_ablation else 0.10
         return reward
 
     def _ablation_reward(self, arguments: dict[str, Any], observation: Any) -> float:
@@ -564,15 +570,20 @@ class CircuitDetectiveToolEnv:
 
         self._ablated_heads.add(head_id)
         self._ablation_deltas[head_id] = float(observation.result.get("behavior_delta", 0.0))
-        reward = 0.04
+        reward = 0.01 if self.require_ablation else 0.04
         ground_truth = set(self.env.ground_truth_heads())
         if self.require_ablation and head_id == self._best_seen_head and head_id in ground_truth:
-            reward += 0.46
+            reward += 0.24
         elif self.require_ablation and head_id in ground_truth:
-            reward += 0.36
+            reward += 0.24
         elif head_id in ground_truth:
             reward += 0.16
-        elif float(observation.result.get("behavior_delta", 0.0)) > 0.0:
+        elif (
+            self.require_ablation
+            and float(observation.result.get("behavior_delta", 0.0)) >= self.causal_delta_threshold
+        ):
+            reward += 0.02
+        elif not self.require_ablation and float(observation.result.get("behavior_delta", 0.0)) > 0.0:
             reward += 0.03
         return reward
 
@@ -580,26 +591,37 @@ class CircuitDetectiveToolEnv:
         score = observation.result.get("score", {})
         f1 = float(score.get("f1", 0.0)) if isinstance(score, dict) else 0.0
         if f1 <= 0.0:
+            if self.require_ablation:
+                return -0.40
             return env_reward + 0.03
         if self.require_ablation:
             return self._phase2_submit_reward(env_reward, observation)
         return env_reward + 0.25
 
     def _phase2_submit_reward(self, env_reward: float, observation: Any) -> float:
-        submitted = set(str(item) for item in observation.result.get("submitted_heads", []))
+        raw_submitted = observation.result.get("submitted_heads", [])
+        submitted = set(str(item) for item in raw_submitted if isinstance(item, str))
+        score = observation.result.get("score", {})
+        f1 = float(score.get("f1", 0.0)) if isinstance(score, dict) else 0.0
+        ground_truth_count = len(self.env.ground_truth_heads())
+        if len(submitted) > max(ground_truth_count + 1, 2):
+            return -0.55
+
         submitted_deltas = [
             self._ablation_deltas[head_id]
             for head_id in submitted
             if head_id in self._ablation_deltas
         ]
         if not submitted_deltas:
-            return -0.45
+            return -0.55
+        if f1 < 1.0:
+            return -0.20 + (0.20 * f1)
         if max(submitted_deltas) >= self.causal_delta_threshold:
-            bonus = 0.70
+            bonus = 0.85
             if submitted and self._best_seen_head in submitted:
                 bonus += 0.15
             return env_reward + bonus
-        return 0.05
+        return -0.10
 
     def _terminal_score(self) -> dict[str, float]:
         if self.last_observation is None or not self.done:

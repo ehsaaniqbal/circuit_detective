@@ -33,6 +33,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--sft-output-dir", default="outputs/phase1_sft_warmup")
     parser.add_argument("--sft-max-steps", type=int, default=32)
     parser.add_argument("--sft-examples-per-prompt", type=int, default=4)
+    parser.add_argument("--sft-max-seq-length", type=int, default=1536)
     parser.add_argument("--sft-learning-rate", type=float, default=2e-5)
     parser.add_argument("--sft-target-head", default="L1H6")
     parser.add_argument(
@@ -125,6 +126,8 @@ def main() -> None:
             str(args.sft_max_steps),
             "--examples-per-prompt",
             str(args.sft_examples_per_prompt),
+            "--max-seq-length",
+            str(args.sft_max_seq_length),
             "--learning-rate",
             str(args.sft_learning_rate),
             "--target-head",

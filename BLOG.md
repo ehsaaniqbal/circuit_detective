@@ -147,7 +147,7 @@ The reward over-specification caused the opposite pathology. When unablated corr
 Reading the rubric component scores across Phase 1 and the Phase 2 attempts side-by-side is more informative than any prose summary:
 
 ![Rubric component comparison](assets/phase2_rubric_comparison.png)
-*Rubric components across four runs. Read column-by-column: Phase 1 after GRPO maxes evidence-gathering and final-answer F1 while skipping intervention. Phase 2 attempt 1 has high final-answer F1 with 0% causal validation — that's the shortcut. Phase 2 strict has 96% intervention with 2% final-answer F1 — that's the freeze. Planted-lite final has all four components at or near 1.0 — the solve. The composable rubric is what makes each pathology visible.*
+*Left: rubric component heatmap across five training stages (green = high, red = low). Right: `causal_validation` and `final_answer_f1` plotted across the same stages, with the shortcut zone (high F1, zero causal) and the freeze zone (high intervention, near-zero F1) annotated. Both pathologies are invisible to a final-answer benchmark; the composable rubric makes them legible at a glance.*
 
 Both Phase 2 failure modes together are meaningful as a pair:
 

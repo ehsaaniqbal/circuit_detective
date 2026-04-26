@@ -29,7 +29,7 @@ tags:
 | Mini-blog (in repo)     | [BLOG.md](BLOG.md)                                                                                                                                    |
 | Build log (in repo)     | [docs/log.md](docs/log.md)                                                                                                                            |
 | Phase plan (in repo)    | [docs/phase_plan.md](docs/phase_plan.md)                                                                                                              |
-| Architecture (in repo)  | [docs/architecture.md](docs/architecture.md)                                                                                                          |
+| Architecture (in repo)  | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)                                                                                                          |
 
 ## The capability gap
 
@@ -148,7 +148,7 @@ We ran three Phase 2 variants. Each exposed a different failure mode that a fina
 This is the central methodological finding: **a final-answer benchmark would have called Phase 2 v1 a success.** The composable rubric and the explicit causal-success metric are what made the shortcut visible.
 
 ![Rubric component comparison](assets/phase2_rubric_comparison.png)
-*Rubric components across all four critical runs. Read column-by-column: Phase 1 GRPO maxes evidence-gathering and final-answer F1 while skipping intervention. Phase 2 attempt 1 has high final-answer F1 with 0% causal validation (the shortcut). Phase 2 strict has 96% intervention with 2% final-answer F1 (the freeze). Planted-lite final has all four components at or near 1.0 (the solve). The rubric decomposition is what makes each failure mode visible.*
+*Left: rubric component heatmap across five training stages (green = high, red = low). Right: causal_validation and final_answer_f1 plotted across the same stages, with the shortcut zone (high F1, zero causal) and the freeze zone (high intervention, near-zero F1) annotated. Both pathologies are invisible to a final-answer benchmark; the composable rubric makes them legible at a glance.*
 
 ### Canonical Phase 2 result — `planted_lite_naive_max_sft1536_grpo300_ctx1024`
 
@@ -208,10 +208,12 @@ Canonical Phase 2 hyperparameters (planted-lite naive-max):
 | Max completion length       | 1024                                                       |
 | Max tool-calling iterations | 4                                                          |
 
-Training entrypoints (the judges' Colab path):
+**All canonical runs were trained via the scripts below on HF Jobs `a10g-large`, not via Colab.** The notebook is provided as an alternative entry point for judges who want to re-run the pipeline interactively, but it was not used to produce the canonical adapters.
 
-- Notebook: `notebooks/phase1_qwen35_2b_grpo.ipynb`
-- Scripts: `scripts/phase1_sft.py`, `scripts/phase1_train.py`, `scripts/hf_phase1_job.py`
+Training entrypoints:
+
+- Scripts (canonical path): `scripts/phase1_sft.py`, `scripts/phase1_train.py`, `scripts/hf_phase1_job.py`
+- Notebook (alternative reproduction path): `notebooks/phase1_qwen35_2b_grpo.ipynb`
 - Plot generator: `scripts/make_plots.py` (regenerates the assets in `assets/` from artifact JSONs)
 - Run summarizer: `scripts/analyze_phase1_run.py`
 

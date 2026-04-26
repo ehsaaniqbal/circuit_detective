@@ -621,6 +621,18 @@ def build_sft_records(
                     decoy_head=planted_decoy,
                     ablated_heads_so_far=[planted_decoy],
                 )
+                target_first_ablation = synthetic_planted_lite_ablation_response(
+                    head_id=planted_target,
+                    target_head=planted_target,
+                    decoy_head=planted_decoy,
+                    ablated_heads_so_far=[],
+                )
+                decoy_terminal_ablation = synthetic_planted_lite_ablation_response(
+                    head_id=planted_decoy,
+                    target_head=planted_target,
+                    decoy_head=planted_decoy,
+                    ablated_heads_so_far=[planted_target],
+                )
                 inspect_call = {
                     "role": "assistant",
                     "content": tool_call("inspect_induction_scores", {"top_k": 2}),
@@ -637,6 +649,13 @@ def build_sft_records(
                     "content": tool_call(
                         "ablate_head",
                         {"layer": target_layer_index, "head": target_head_index},
+                    ),
+                }
+                decoy_after_target_call = {
+                    "role": "assistant",
+                    "content": tool_call(
+                        "ablate_head",
+                        {"layer": decoy_layer, "head": decoy_head_index},
                     ),
                 }
                 submit_call = {
@@ -707,6 +726,76 @@ def build_sft_records(
                             "content": (
                                 "Both candidate heads have been ablated. Do not call "
                                 "another ablation; submit best_ablated_head_so_far.\n"
+                                f"<tool_response>\n{target_ablation}\n</tool_response>"
+                            ),
+                        },
+                        submit_call,
+                    ],
+                    [
+                        {"role": "system", "content": system_prompt},
+                        {
+                            "role": "user",
+                            "content": (
+                                "Recovery case: one candidate was already ablated first. "
+                                "Follow next_required_tool and ablate the remaining candidate.\n"
+                                f"<tool_response>\n{target_first_ablation}\n</tool_response>"
+                            ),
+                        },
+                        decoy_after_target_call,
+                    ],
+                    [
+                        {"role": "system", "content": system_prompt},
+                        {
+                            "role": "user",
+                            "content": (
+                                "Recovery terminal case: the final ablation may be the decoy, "
+                                "but must_submit names the max-delta head. Submit must_submit.\n"
+                                f"<tool_response>\n{decoy_terminal_ablation}\n</tool_response>"
+                            ),
+                        },
+                        submit_call,
+                    ],
+                    [
+                        {"role": "system", "content": system_prompt},
+                        {
+                            "role": "user",
+                            "content": (
+                                "Choose the next tool from this terminal observation.\n"
+                                f"<tool_response>\n{target_ablation}\n</tool_response>"
+                            ),
+                        },
+                        submit_call,
+                    ],
+                    [
+                        {"role": "system", "content": system_prompt},
+                        {
+                            "role": "user",
+                            "content": (
+                                "Choose the next tool from this terminal observation.\n"
+                                f"<tool_response>\n{decoy_terminal_ablation}\n</tool_response>"
+                            ),
+                        },
+                        submit_call,
+                    ],
+                    [
+                        {"role": "system", "content": system_prompt},
+                        {
+                            "role": "user",
+                            "content": (
+                                "The JSON field next_required_tool is submit_circuit. "
+                                "Use next_required_arguments exactly; no extra ablation.\n"
+                                f"<tool_response>\n{target_ablation}\n</tool_response>"
+                            ),
+                        },
+                        submit_call,
+                    ],
+                    [
+                        {"role": "system", "content": system_prompt},
+                        {
+                            "role": "user",
+                            "content": (
+                                "terminal_action_required is true. Stopping now is wrong; "
+                                "call submit_circuit with must_submit.\n"
                                 f"<tool_response>\n{target_ablation}\n</tool_response>"
                             ),
                         },
@@ -949,11 +1038,18 @@ def validate_sft_records_fit(
     ]
     if not submit_records:
         raise ValueError("Planted-lite SFT records contain no submit_circuit examples.")
+    terminal_submit_records = [
+        record
+        for record in submit_records
+        if '"next_required_tool": "submit_circuit"' in record["text"]
+        or '"terminal_action_required": true' in record["text"]
+    ]
 
     print(
         "sft_preflight: planted_lite records fit "
         f"max_seq_length={max_seq_length}; longest={max(_token_count(tokenizer, record['text']) for record in records)}; "
-        f"submit_records={len(submit_records)}/{len(records)}",
+        f"submit_records={len(submit_records)}/{len(records)}; "
+        f"terminal_submit_records={len(terminal_submit_records)}/{len(records)}",
         flush=True,
     )
 

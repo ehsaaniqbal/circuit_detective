@@ -113,6 +113,20 @@ def synthetic_reset_observation(*, scenario: str) -> str:
         if is_phase2
         else "l1_induction_attn_only_2l"
     )
+    if is_planted_lite:
+        return json.dumps(
+            {
+                "done": False,
+                "remaining_budget": remaining_budget,
+                "result": {
+                    "goal": goal,
+                    "requires_ablation": True,
+                },
+                "scenario_id": scenario_id,
+                "summary": summary,
+            },
+            sort_keys=True,
+        )
     return json.dumps(
         {
             "available_tools": [
@@ -182,13 +196,6 @@ def synthetic_planted_lite_inspect_response(
         scores.append({"head": head, "head_id": head_id, "layer": layer, "score": score})
     return json.dumps(
         {
-            "available_tools": [
-                "list_tools",
-                "run_probe",
-                "inspect_induction_scores",
-                "ablate_head",
-                "submit_circuit",
-            ],
             "done": False,
             "remaining_budget": 4,
             "result": {
@@ -196,10 +203,8 @@ def synthetic_planted_lite_inspect_response(
                 "candidate_heads": [decoy_head, target_head],
             },
             "scenario_id": "planted_lite_causal_chain",
-            "step_count": 1,
             "summary": (
-                "Returned exactly two planted-lite candidate heads. Ablate each "
-                "candidate, then submit best_ablated_head_so_far."
+                "Ablate both candidate_heads; inspection rank alone is a decoy."
             ),
         },
         sort_keys=True,
@@ -226,19 +231,11 @@ def synthetic_planted_lite_ablation_response(
     delta = deltas[head_id]
     return json.dumps(
         {
-            "available_tools": [
-                "list_tools",
-                "run_probe",
-                "inspect_induction_scores",
-                "ablate_head",
-                "submit_circuit",
-            ],
             "done": False,
             "remaining_budget": 3 if remaining_candidate_heads else 2,
             "result": {
                 "ablated_head": head_id,
                 "behavior_delta": delta,
-                "causal_delta_threshold": PLANTED_LITE_CAUSAL_DELTA_THRESHOLD,
                 "causal_verified": delta >= PLANTED_LITE_CAUSAL_DELTA_THRESHOLD,
                 "head": head,
                 "layer": layer,
@@ -246,11 +243,9 @@ def synthetic_planted_lite_ablation_response(
                 "ablated_candidate_heads": ablated_candidate_heads,
                 "remaining_candidate_heads": remaining_candidate_heads,
                 "best_ablated_head_so_far": best_head,
-                "best_ablated_delta_so_far": deltas[best_head],
                 "must_submit": best_head if not remaining_candidate_heads else None,
             },
             "scenario_id": "planted_lite_causal_chain",
-            "step_count": 2 if remaining_candidate_heads else 3,
             "summary": f"Ablated {head_id}; behavior_delta={delta}.",
         },
         sort_keys=True,
@@ -599,43 +594,83 @@ def build_sft_records(
                     decoy_head=planted_decoy,
                     ablated_heads_so_far=[planted_decoy],
                 )
-                messages = [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"{user_prompt}\n{reset_observation}"},
-                    {
-                        "role": "assistant",
-                        "content": tool_call("inspect_induction_scores", {"top_k": 2}),
-                    },
-                    {"role": "user", "content": f"<tool_response>\n{planted_inspect}\n</tool_response>"},
-                    {
-                        "role": "assistant",
-                        "content": tool_call(
-                            "ablate_head",
-                            {"layer": decoy_layer, "head": decoy_head_index},
-                        ),
-                    },
-                    {"role": "user", "content": f"<tool_response>\n{decoy_ablation}\n</tool_response>"},
-                    {
-                        "role": "assistant",
-                        "content": tool_call(
-                            "ablate_head",
-                            {"layer": target_layer_index, "head": target_head_index},
-                        ),
-                    },
-                    {"role": "user", "content": f"<tool_response>\n{target_ablation}\n</tool_response>"},
-                    {
-                        "role": "assistant",
-                        "content": tool_call("submit_circuit", {"heads": [planted_target]}),
-                    },
+                inspect_call = {
+                    "role": "assistant",
+                    "content": tool_call("inspect_induction_scores", {"top_k": 2}),
+                }
+                decoy_call = {
+                    "role": "assistant",
+                    "content": tool_call(
+                        "ablate_head",
+                        {"layer": decoy_layer, "head": decoy_head_index},
+                    ),
+                }
+                target_call = {
+                    "role": "assistant",
+                    "content": tool_call(
+                        "ablate_head",
+                        {"layer": target_layer_index, "head": target_head_index},
+                    ),
+                }
+                submit_call = {
+                    "role": "assistant",
+                    "content": tool_call("submit_circuit", {"heads": [planted_target]}),
+                }
+                trace_variants = [
+                    [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": f"{user_prompt}\n{reset_observation}"},
+                        inspect_call,
+                        {"role": "user", "content": f"<tool_response>\n{planted_inspect}\n</tool_response>"},
+                        decoy_call,
+                        {"role": "user", "content": f"<tool_response>\n{decoy_ablation}\n</tool_response>"},
+                        target_call,
+                        {"role": "user", "content": f"<tool_response>\n{target_ablation}\n</tool_response>"},
+                        submit_call,
+                    ],
+                    [
+                        {"role": "system", "content": system_prompt},
+                        {
+                            "role": "user",
+                            "content": (
+                                "Continue the causal-chain episode. Ablate a candidate next.\n"
+                                f"<tool_response>\n{planted_inspect}\n</tool_response>"
+                            ),
+                        },
+                        decoy_call,
+                    ],
+                    [
+                        {"role": "system", "content": system_prompt},
+                        {
+                            "role": "user",
+                            "content": (
+                                "Continue the causal-chain episode. One candidate remains; ablate it.\n"
+                                f"<tool_response>\n{decoy_ablation}\n</tool_response>"
+                            ),
+                        },
+                        target_call,
+                    ],
+                    [
+                        {"role": "system", "content": system_prompt},
+                        {
+                            "role": "user",
+                            "content": (
+                                "Continue the causal-chain episode. must_submit is now set.\n"
+                                f"<tool_response>\n{target_ablation}\n</tool_response>"
+                            ),
+                        },
+                        submit_call,
+                    ],
                 ]
-                text = tokenizer.apply_chat_template(
-                    messages,
-                    tools=tools,
-                    tokenize=False,
-                    add_generation_prompt=False,
-                    chat_template_kwargs={"enable_thinking": False},
-                )
-                records.append({"text": text})
+                for messages in trace_variants:
+                    text = tokenizer.apply_chat_template(
+                        messages,
+                        tools=tools,
+                        tokenize=False,
+                        add_generation_prompt=False,
+                        chat_template_kwargs={"enable_thinking": False},
+                    )
+                    records.append({"text": text})
                 record_index += 1
                 continue
 
@@ -817,6 +852,61 @@ def build_sft_records(
     return records
 
 
+def _token_count(tokenizer: Any, text: str) -> int:
+    tokenized = tokenizer(text, add_special_tokens=False)
+    input_ids = tokenized["input_ids"]
+    if input_ids and isinstance(input_ids[0], list):
+        return len(input_ids[0])
+    return len(input_ids)
+
+
+def validate_sft_records_fit(
+    *,
+    records: list[dict[str, str]],
+    tokenizer: Any,
+    max_seq_length: int,
+    scenario: str,
+) -> None:
+    if scenario != "planted_lite":
+        return
+
+    over_limit: list[tuple[int, int]] = []
+    truncated_submit: list[tuple[int, int]] = []
+    for index, record in enumerate(records):
+        text = record["text"]
+        length = _token_count(tokenizer, text)
+        if length > max_seq_length:
+            over_limit.append((index, length))
+
+        submit_index = text.rfind("<function=submit_circuit>")
+        if submit_index >= 0:
+            submit_prefix_length = _token_count(tokenizer, text[:submit_index])
+            if submit_prefix_length >= max_seq_length:
+                truncated_submit.append((index, submit_prefix_length))
+
+    if over_limit or truncated_submit:
+        longest = max((_token_count(tokenizer, record["text"]) for record in records), default=0)
+        raise ValueError(
+            "Planted-lite SFT examples do not fit the configured context. "
+            f"max_seq_length={max_seq_length}, longest_record={longest}, "
+            f"over_limit={over_limit[:5]}, truncated_submit={truncated_submit[:5]}. "
+            "Increase --sft-max-seq-length or compact the synthetic traces before launching."
+        )
+
+    submit_records = [
+        record for record in records if "<function=submit_circuit>" in record["text"]
+    ]
+    if not submit_records:
+        raise ValueError("Planted-lite SFT records contain no submit_circuit examples.")
+
+    print(
+        "sft_preflight: planted_lite records fit "
+        f"max_seq_length={max_seq_length}; longest={max(_token_count(tokenizer, record['text']) for record in records)}; "
+        f"submit_records={len(submit_records)}/{len(records)}",
+        flush=True,
+    )
+
+
 def main() -> None:
     args = parse_args()
 
@@ -857,6 +947,12 @@ def main() -> None:
         tokenizer=tokenizer,
         examples_per_prompt=args.examples_per_prompt,
         target_head=args.target_head,
+        scenario=args.scenario,
+    )
+    validate_sft_records_fit(
+        records=records,
+        tokenizer=tokenizer,
+        max_seq_length=args.max_seq_length,
         scenario=args.scenario,
     )
     output_dir = Path(args.output_dir)

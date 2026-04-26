@@ -261,20 +261,60 @@ def test_planted_lite_wrapper_rewards_full_causal_chain_only() -> None:
     assert records[0]["ablate_submitted"] is True
 
 
-def test_planted_lite_no_submit_after_ablation_is_strict_failure() -> None:
+def test_planted_lite_reward_ladder_keeps_grpo_variance_before_success() -> None:
     reset_reward_trace()
-    env = make_planted_lite_env()
+    inspect_only = make_planted_lite_env(seed=41)
+    inspect_only.reset()
+    inspect_only.inspect_induction_scores(top_k=2)
+
+    one_ablation = make_planted_lite_env(seed=41)
+    one_ablation.reset()
+    inspect_payload = json.loads(one_ablation.inspect_induction_scores(top_k=2))
+    decoy = Head.parse(str(inspect_payload["result"]["scores"][0]["head_id"]))
+    one_ablation.ablate_head(layer=decoy.layer, head=decoy.head)
+
+    two_ablation = make_planted_lite_env(seed=41)
+    two_ablation.reset()
+    inspect_payload = json.loads(two_ablation.inspect_induction_scores(top_k=2))
+    candidates = [Head.parse(str(item["head_id"])) for item in inspect_payload["result"]["scores"]]
+    for candidate in candidates:
+        two_ablation.ablate_head(layer=candidate.layer, head=candidate.head)
+
+    rewards = reward_func([inspect_only, one_ablation, two_ablation])
+
+    assert rewards == [-1.2, -0.4, 0.6]
+
+
+def test_planted_lite_wrong_submit_after_full_evidence_is_less_bad_than_no_evidence() -> None:
+    reset_reward_trace()
+    env = make_planted_lite_env(seed=43)
     env.reset()
     target = env.env.ground_truth_heads()[0]
 
     inspect_payload = json.loads(env.inspect_induction_scores(top_k=2))
-    decoy = Head.parse(str(inspect_payload["result"]["scores"][0]["head_id"]))
-    planted = Head.parse(target)
-    env.ablate_head(layer=decoy.layer, head=decoy.head)
-    env.ablate_head(layer=planted.layer, head=planted.head)
+    candidates = [Head.parse(str(item["head_id"])) for item in inspect_payload["result"]["scores"]]
+    for candidate in candidates:
+        env.ablate_head(layer=candidate.layer, head=candidate.head)
+    wrong = next(candidate.head_id for candidate in candidates if candidate.head_id != target)
+    env.submit_circuit([wrong])
+
     rewards = reward_func([env])
 
-    assert rewards[0] == -2.0
+    assert rewards[0] == -0.6
+
+
+def test_planted_lite_correct_submit_after_one_ablation_gets_bridge_credit() -> None:
+    reset_reward_trace()
+    env = make_planted_lite_env(seed=47)
+    env.reset()
+    target = Head.parse(env.env.ground_truth_heads()[0])
+
+    env.inspect_induction_scores(top_k=2)
+    env.ablate_head(layer=target.layer, head=target.head)
+    env.submit_circuit([target.head_id])
+    rewards = reward_func([env])
+
+    assert rewards[0] == 1.0
 
 
 def test_ioi_wrapper_handles_multi_head_submission_and_rubric() -> None:

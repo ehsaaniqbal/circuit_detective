@@ -17,6 +17,9 @@ class DummyTokenizer:
     def apply_chat_template(self, messages, **kwargs):  # type: ignore[no-untyped-def]
         return "\n".join(message["content"] for message in messages)
 
+    def __call__(self, text, add_special_tokens=False):  # type: ignore[no-untyped-def]
+        return {"input_ids": text.split()}
+
 
 def test_tool_call_renders_trl_xml_format() -> None:
     rendered = phase1_sft.tool_call("submit_circuit", {"heads": ["L1H6"]})
@@ -123,12 +126,31 @@ def test_planted_lite_sft_records_include_full_causal_chain() -> None:
     )
 
     assert records
-    text = records[0]["text"]
-    assert "inspect_induction_scores" in text
-    assert text.count("<function=ablate_head>") == 2
-    assert "best_ablated_head_so_far" in text
-    assert "must_submit" in text
-    assert "<function=submit_circuit>" in text
+    full_trace = records[0]["text"]
+    assert len(records) == 16
+    assert "inspect_induction_scores" in full_trace
+    assert full_trace.count("<function=ablate_head>") == 2
+    assert "best_ablated_head_so_far" in full_trace
+    assert "must_submit" in full_trace
+    assert "<function=submit_circuit>" in full_trace
+    assert any("One candidate remains; ablate it." in record["text"] for record in records)
+    assert any("must_submit is now set." in record["text"] for record in records)
+
+
+def test_planted_lite_sft_preflight_rejects_truncated_submit() -> None:
+    records = [{"text": "one two <function=submit_circuit> three"}]
+
+    try:
+        phase1_sft.validate_sft_records_fit(
+            records=records,
+            tokenizer=DummyTokenizer(),
+            max_seq_length=2,
+            scenario="planted_lite",
+        )
+    except ValueError as exc:
+        assert "truncated_submit" in str(exc)
+    else:
+        raise AssertionError("Expected planted-lite SFT preflight to reject truncated submit.")
 
 
 def test_ioi_synthetic_trace_exposes_multi_head_target() -> None:

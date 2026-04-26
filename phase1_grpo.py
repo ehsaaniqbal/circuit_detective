@@ -457,6 +457,9 @@ class CircuitDetectiveToolEnv:
 
     def _final_reward(self) -> float:
         """Return the scalar reward consumed by GRPO for the completed rollout."""
+        if self.strict_causal_chain:
+            return self._strict_causal_chain_final_reward()
+
         if self.require_ablation and not self.done:
             return -2.0 if self.strict_causal_chain else -1.0
 
@@ -465,9 +468,35 @@ class CircuitDetectiveToolEnv:
             reward -= 0.35
             if not self.tool_trace:
                 reward -= 0.15
-        if self.strict_causal_chain:
-            return max(min(reward, 4.0), -2.0)
         return max(min(reward, 1.5), -1.0)
+
+    def _strict_causal_chain_final_reward(self) -> float:
+        candidate_heads = set(self.env.candidate_heads())
+        ablated_candidates = candidate_heads.intersection(self._ablated_heads)
+        ablated_all_candidates = bool(candidate_heads) and ablated_candidates == candidate_heads
+        tools = [item["tool_name"] for item in self.tool_trace]
+        terminal_score = self._terminal_score()
+        f1 = float(terminal_score.get("f1", 0.0))
+
+        if self.done:
+            if f1 == 1.0 and ablated_all_candidates:
+                return 4.0
+            if f1 == 1.0 and ablated_candidates:
+                return 1.0
+            if "submit_circuit" in tools and ablated_all_candidates:
+                return -0.6
+            if "submit_circuit" in tools:
+                return -1.0
+
+        if ablated_all_candidates:
+            return 0.6
+        if len(ablated_candidates) == 1:
+            return -0.4
+        if "inspect_induction_scores" in tools:
+            return -1.2
+        if tools:
+            return -1.6
+        return -2.0
 
     def _training_summary(self, reward: float) -> dict[str, Any]:
         """Summarize one rollout for evaluation diagnostics."""
@@ -485,12 +514,18 @@ class CircuitDetectiveToolEnv:
             for head_id in submitted_set
             if head_id in self._ablation_deltas
         }
+        candidate_heads = set(self.env.candidate_heads())
+        ablated_candidate_heads = sorted(candidate_heads.intersection(self._ablated_heads))
         max_submitted_delta = max(submitted_ablation_deltas.values(), default=0.0)
         ablate_submitted = bool(submitted_ablation_deltas)
         causal_success = (
             terminal_score.get("f1", 0.0) == 1.0
             and ablate_submitted
             and max_submitted_delta >= self.causal_delta_threshold
+            and (
+                not self.strict_causal_chain
+                or (bool(candidate_heads) and set(ablated_candidate_heads) == candidate_heads)
+            )
         )
         scenario_id = ""
         if self.last_observation is not None:
@@ -517,6 +552,14 @@ class CircuitDetectiveToolEnv:
             "used_ablate": "ablate_head" in tools,
             "submitted_heads": submitted_heads,
             "ablated_heads": sorted(self._ablated_heads),
+            "candidate_heads": sorted(candidate_heads),
+            "ablated_candidate_heads": ablated_candidate_heads,
+            "candidate_ablation_coverage": (
+                len(ablated_candidate_heads) / len(candidate_heads)
+                if candidate_heads
+                else 0.0
+            ),
+            "all_candidates_ablated": bool(candidate_heads) and set(ablated_candidate_heads) == candidate_heads,
             "best_seen_head": self._best_seen_head,
             "ablate_submitted": ablate_submitted,
             "ablation_faithfulness": max_submitted_delta,
@@ -607,6 +650,15 @@ class CircuitDetectiveToolEnv:
 
         self._ablated_heads.add(head_id)
         self._ablation_deltas[head_id] = float(observation.result.get("behavior_delta", 0.0))
+        if self.strict_causal_chain:
+            candidate_heads = set(self.env.candidate_heads())
+            if head_id not in candidate_heads:
+                return -0.25
+            ablated_candidates = candidate_heads.intersection(self._ablated_heads)
+            if candidate_heads and ablated_candidates == candidate_heads:
+                return 0.80
+            return 0.25
+
         reward = 0.01 if self.require_ablation else 0.04
         ground_truth = set(self.env.ground_truth_heads())
         if self.require_ablation and head_id == self._best_seen_head and head_id in ground_truth:
@@ -629,7 +681,13 @@ class CircuitDetectiveToolEnv:
         f1 = float(score.get("f1", 0.0)) if isinstance(score, dict) else 0.0
         if f1 <= 0.0:
             if self.strict_causal_chain:
-                return -2.0
+                candidate_heads = set(self.env.candidate_heads())
+                ablated_candidates = candidate_heads.intersection(self._ablated_heads)
+                if candidate_heads and ablated_candidates == candidate_heads:
+                    return -0.6
+                if ablated_candidates:
+                    return -1.0
+                return -1.5
             if self.require_ablation:
                 return -0.40
             return env_reward + 0.03

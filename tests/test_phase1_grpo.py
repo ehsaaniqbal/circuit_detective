@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 
 from circuit_detective.phase1_grpo import CircuitDetectiveToolEnv
+from circuit_detective.phase1_grpo import CurriculumCircuitToolEnv
+from circuit_detective.phase1_grpo import IOICircuitToolEnv
 from circuit_detective.phase1_grpo import Phase2CircuitDetectiveToolEnv
 from circuit_detective.phase1_grpo import PlantedCircuitToolEnv
 from circuit_detective.phase1_grpo import consume_reward_trace, reset_reward_trace, reward_func
@@ -21,6 +23,10 @@ def make_planted_env(seed: int = 17) -> PlantedCircuitToolEnv:
     return PlantedCircuitToolEnv(
         backend_factory=lambda: RandomizedPlantedCircuitBackend(seed=seed)
     )
+
+
+def make_ioi_env() -> IOICircuitToolEnv:
+    return IOICircuitToolEnv()
 
 
 def test_wrapper_reset_returns_json_observation() -> None:
@@ -192,3 +198,36 @@ def test_planted_wrapper_rewards_ablate_then_submit_true_target() -> None:
     assert rewards[0] > 1.0
     assert records[0]["causal_success"] is True
     assert records[0]["ablate_submitted"] is True
+
+
+def test_ioi_wrapper_handles_multi_head_submission_and_rubric() -> None:
+    reset_reward_trace()
+    env = make_ioi_env()
+    env.reset()
+    targets = env.env.ground_truth_heads()
+
+    env.inspect_induction_scores(top_k=8)
+    env.ablate_head(layer=9, head=9)
+    env.submit_circuit(targets)
+    rewards = reward_func([env])
+    records = consume_reward_trace()
+
+    assert rewards[0] > 1.0
+    assert records[0]["scenario_id"] == "ioi_gpt2_small_name_mover"
+    assert records[0]["correct"] is True
+    assert records[0]["causal_success"] is True
+    assert records[0]["rubric"]["final_answer_f1"] == 1.0
+    assert records[0]["rubric"]["causal_validation"] == 1.0
+
+
+def test_curriculum_wrapper_cycles_between_planted_and_ioi() -> None:
+    CurriculumCircuitToolEnv._instance_counter = 0
+
+    first = CurriculumCircuitToolEnv()
+    second = CurriculumCircuitToolEnv()
+
+    first_payload = json.loads(first.reset() or "{}")
+    second_payload = json.loads(second.reset() or "{}")
+
+    assert first_payload["scenario_id"] == "planted_circuit_arena"
+    assert second_payload["scenario_id"] == "ioi_gpt2_small_name_mover"

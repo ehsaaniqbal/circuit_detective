@@ -1,9 +1,15 @@
 from __future__ import annotations
 
 from circuit_detective.models import CircuitDetectiveAction
-from circuit_detective.server.backend import FakeInductionBackend, Head, RandomizedPlantedCircuitBackend
+from circuit_detective.server.backend import (
+    FakeInductionBackend,
+    Head,
+    PublishedIOICircuitBackend,
+    RandomizedPlantedCircuitBackend,
+)
 from circuit_detective.server.circuit_detective_environment import (
     CircuitDetectiveEnvironment,
+    IOI_CAUSAL_DELTA_THRESHOLD,
     PLANTED_CAUSAL_DELTA_THRESHOLD,
 )
 
@@ -24,6 +30,14 @@ def make_planted_env(seed: int = 7) -> CircuitDetectiveEnvironment:
         backend=RandomizedPlantedCircuitBackend(seed=seed),
         require_ablation=True,
         causal_delta_threshold=PLANTED_CAUSAL_DELTA_THRESHOLD,
+    )
+
+
+def make_ioi_env() -> CircuitDetectiveEnvironment:
+    return CircuitDetectiveEnvironment(
+        backend=PublishedIOICircuitBackend(),
+        require_ablation=True,
+        causal_delta_threshold=IOI_CAUSAL_DELTA_THRESHOLD,
     )
 
 
@@ -158,6 +172,43 @@ def test_planted_env_requires_ablation_of_true_target_not_top_decoy() -> None:
     assert observation.done is True
     assert observation.result["phase2"]["causal_success"] is True
     assert observation.reward > 0.8
+
+
+def test_ioi_env_scores_multi_head_name_mover_submission() -> None:
+    env = make_ioi_env()
+    observation = env.reset()
+    targets = env.ground_truth_heads()
+
+    assert observation.scenario_id == "ioi_gpt2_small_name_mover"
+    assert targets == ["L9H9", "L9H6", "L10H0"]
+
+    observation = env.step(
+        CircuitDetectiveAction(
+            tool_name="inspect_induction_scores",
+            arguments={"top_k": 8},
+        )
+    )
+    ranked = [str(item["head_id"]) for item in observation.result["scores"]]
+    assert set(targets).issubset(ranked)
+
+    head = Head.parse(targets[0])
+    observation = env.step(
+        CircuitDetectiveAction(
+            tool_name="ablate_head",
+            arguments={"layer": head.layer, "head": head.head},
+        )
+    )
+    assert observation.result["causal_verified"] is True
+
+    observation = env.step(
+        CircuitDetectiveAction(
+            tool_name="submit_circuit",
+            arguments={"heads": targets},
+        )
+    )
+    assert observation.done is True
+    assert observation.result["score"]["f1"] == 1.0
+    assert observation.result["phase2"]["causal_success"] is True
 
 
 def test_invalid_tool_gets_penalized() -> None:

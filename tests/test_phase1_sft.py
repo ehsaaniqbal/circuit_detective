@@ -73,3 +73,15 @@ def test_planted_synthetic_ablation_marks_only_target_as_causal() -> None:
     assert decoy_payload["result"]["causal_verified"] is False
     assert target_payload["result"]["causal_verified"] is True
     assert target_payload["result"]["behavior_delta"] > decoy_payload["result"]["behavior_delta"]
+
+
+def test_ioi_synthetic_trace_exposes_multi_head_target() -> None:
+    inspect_payload = json.loads(phase1_sft.synthetic_ioi_inspect_response())
+    ablation_payload = json.loads(phase1_sft.synthetic_ioi_ablation_response("L9H9"))
+
+    ranked = [item["head_id"] for item in inspect_payload["result"]["scores"]]
+
+    assert phase1_sft.ioi_target_heads() == ["L9H9", "L9H6", "L10H0"]
+    assert set(phase1_sft.ioi_target_heads()).issubset(ranked)
+    assert inspect_payload["scenario_id"] == "ioi_gpt2_small_name_mover"
+    assert ablation_payload["result"]["causal_verified"] is True

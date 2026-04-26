@@ -6,6 +6,10 @@ from pathlib import Path
 from typing import Any
 
 from circuit_detective.phase1_grpo import (
+    CURRICULUM_SYSTEM_PROMPT,
+    CURRICULUM_USER_PROMPT_VARIANTS,
+    IOI_SYSTEM_PROMPT,
+    IOI_USER_PROMPT_VARIANTS,
     PHASE1_SYSTEM_PROMPT,
     PHASE1_USER_PROMPT_VARIANTS,
     PHASE2_SYSTEM_PROMPT,
@@ -34,7 +38,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--scenario",
-        choices=["phase1", "phase2", "planted"],
+        choices=["phase1", "phase2", "planted", "ioi", "curriculum"],
         default="phase1",
         help="Warm-start curriculum level. phase2 examples always include ablation.",
     )
@@ -53,7 +57,10 @@ def tool_call(name: str, parameters: dict[str, Any]) -> str:
 def synthetic_reset_observation(*, scenario: str) -> str:
     is_phase2 = scenario == "phase2"
     is_planted = scenario == "planted"
+    is_ioi = scenario == "ioi"
     remaining_budget = 10 if is_planted else 12
+    if is_ioi:
+        remaining_budget = 12
     return json.dumps(
         {
             "available_tools": [
@@ -67,23 +74,33 @@ def synthetic_reset_observation(*, scenario: str) -> str:
             "remaining_budget": remaining_budget,
             "result": {
                 "goal": (
-                    "Ablate candidate heads and submit the planted head with the "
-                    "largest behavior delta."
-                    if is_planted
+                    "Submit exactly the IOI name-mover heads as a multi-head circuit."
+                    if is_ioi
                     else (
-                        "Inspect the dominant induction head, ablate that candidate, "
-                        "then submit the verified head as ['LxHy']."
-                        if is_phase2
-                        else "Submit the dominant induction head as ['LxHy']."
+                        "Ablate candidate heads and submit the planted head with the "
+                        "largest behavior delta."
+                        if is_planted
+                        else (
+                            "Inspect the dominant induction head, ablate that candidate, "
+                            "then submit the verified head as ['LxHy']."
+                            if is_phase2
+                            else "Submit the dominant induction head as ['LxHy']."
+                        )
                     )
                 ),
-                "requires_ablation": is_phase2 or is_planted,
-                "scenario": "planted_circuit_arena"
-                if is_planted
-                else "l1_induction_attn_only_2l",
+                "requires_ablation": is_phase2 or is_planted or is_ioi,
+                "scenario": (
+                    "ioi_gpt2_small_name_mover"
+                    if is_ioi
+                    else "planted_circuit_arena"
+                    if is_planted
+                    else "l1_induction_attn_only_2l"
+                ),
             },
             "scenario_id": (
-                "planted_circuit_arena"
+                "ioi_gpt2_small_name_mover"
+                if is_ioi
+                else "planted_circuit_arena"
                 if is_planted
                 else "l2_ablation_required"
                 if is_phase2
@@ -95,12 +112,17 @@ def synthetic_reset_observation(*, scenario: str) -> str:
                 "Use inspect_induction_scores, ablate_head, then submit_circuit."
                 if is_phase2
                 else (
-                    "Planted Circuit Arena: score rankings can be decoys. "
-                    "Use ablation to find the true causal head."
-                    if is_planted
+                    "IOI Name-Mover Arena: identify and submit the multi-head "
+                    "name-mover component."
+                    if is_ioi
                     else (
-                        "Phase 1: localize the dominant induction head. "
-                        "Use inspect_induction_scores, then submit_circuit."
+                        "Planted Circuit Arena: score rankings can be decoys. "
+                        "Use ablation to find the true causal head."
+                        if is_planted
+                        else (
+                            "Phase 1: localize the dominant induction head. "
+                            "Use inspect_induction_scores, then submit_circuit."
+                        )
                     )
                 )
             ),
@@ -229,6 +251,82 @@ def synthetic_planted_ablation_response(
     )
 
 
+def ioi_target_heads() -> list[str]:
+    return ["L9H9", "L9H6", "L10H0"]
+
+
+def synthetic_ioi_inspect_response() -> str:
+    ranked_heads = [
+        ("L9H9", 0.97),
+        ("L10H0", 0.94),
+        ("L9H6", 0.92),
+        ("L10H10", 0.74),
+        ("L10H6", 0.71),
+        ("L7H3", 0.68),
+        ("L8H10", 0.65),
+        ("L10H7", 0.61),
+    ]
+    scores = []
+    for head_id, score in ranked_heads:
+        layer, head = parse_head_id(head_id)
+        scores.append(
+            {
+                "head": head,
+                "head_id": head_id,
+                "layer": layer,
+                "score": score,
+            }
+        )
+    return json.dumps(
+        {
+            "available_tools": [
+                "list_tools",
+                "run_probe",
+                "inspect_induction_scores",
+                "ablate_head",
+                "submit_circuit",
+            ],
+            "done": False,
+            "remaining_budget": 11,
+            "result": {"scores": scores},
+            "scenario_id": "ioi_gpt2_small_name_mover",
+            "step_count": 1,
+            "summary": "Returned candidate IOI head effects for the name-mover component.",
+        },
+        sort_keys=True,
+    )
+
+
+def synthetic_ioi_ablation_response(head_id: str) -> str:
+    layer, head = parse_head_id(head_id)
+    delta = {"L9H9": 0.34, "L10H0": 0.31, "L9H6": 0.29}.get(head_id, 0.02)
+    return json.dumps(
+        {
+            "available_tools": [
+                "list_tools",
+                "run_probe",
+                "inspect_induction_scores",
+                "ablate_head",
+                "submit_circuit",
+            ],
+            "done": False,
+            "remaining_budget": 10,
+            "result": {
+                "ablated_head": head_id,
+                "behavior_delta": delta,
+                "causal_delta_threshold": 0.10,
+                "causal_verified": delta >= 0.10,
+                "head": head,
+                "layer": layer,
+            },
+            "scenario_id": "ioi_gpt2_small_name_mover",
+            "step_count": 2,
+            "summary": f"Ablated IOI candidate {head_id}; behavior_delta={delta}.",
+        },
+        sort_keys=True,
+    )
+
+
 def synthetic_inspect_response(target_head: str, *, scenario: str = "phase1") -> str:
     return json.dumps(
         {
@@ -308,14 +406,17 @@ def build_sft_records(
         tool_env.ablate_head,
         tool_env.submit_circuit,
     ]
-    reset_observation = synthetic_reset_observation(scenario=scenario)
-    inspect_response = synthetic_inspect_response(target_head, scenario=scenario)
-    ablation_response = synthetic_ablation_response(target_head, scenario=scenario)
     target_layer = int(target_head.split("H", maxsplit=1)[0].removeprefix("L"))
     target_head_index = int(target_head.split("H", maxsplit=1)[1])
 
     records: list[dict[str, str]] = []
-    if scenario == "planted":
+    if scenario == "curriculum":
+        system_prompt = CURRICULUM_SYSTEM_PROMPT
+        user_prompts = CURRICULUM_USER_PROMPT_VARIANTS
+    elif scenario == "ioi":
+        system_prompt = IOI_SYSTEM_PROMPT
+        user_prompts = IOI_USER_PROMPT_VARIANTS
+    elif scenario == "planted":
         system_prompt = PLANTED_SYSTEM_PROMPT
         user_prompts = PLANTED_USER_PROMPT_VARIANTS
     elif scenario == "phase2":
@@ -328,7 +429,12 @@ def build_sft_records(
     record_index = 0
     for user_prompt in user_prompts:
         for repeat in range(examples_per_prompt):
-            if scenario == "planted":
+            record_scenario = scenario
+            if scenario == "curriculum":
+                record_scenario = "planted" if record_index % 2 == 0 else "ioi"
+            reset_observation = synthetic_reset_observation(scenario=record_scenario)
+
+            if record_scenario == "planted":
                 planted_target, planted_decoys = planted_heads_for_record(record_index)
                 target_position = 1 if record_index % 2 == 0 else 2
                 candidate_order = planted_candidate_order(
@@ -391,7 +497,60 @@ def build_sft_records(
                 record_index += 1
                 continue
 
-            use_ablation = scenario == "phase2" or repeat % 2 == 1
+            if record_scenario == "ioi":
+                messages = [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": f"{user_prompt}\n{reset_observation}"},
+                    {
+                        "role": "assistant",
+                        "content": tool_call("inspect_induction_scores", {"top_k": 8}),
+                    },
+                    {
+                        "role": "user",
+                        "content": f"<tool_response>\n{synthetic_ioi_inspect_response()}\n</tool_response>",
+                    },
+                ]
+                for head_id in ioi_target_heads():
+                    layer, head = parse_head_id(head_id)
+                    messages.extend(
+                        [
+                            {
+                                "role": "assistant",
+                                "content": tool_call(
+                                    "ablate_head",
+                                    {"layer": layer, "head": head},
+                                ),
+                            },
+                            {
+                                "role": "user",
+                                "content": (
+                                    "<tool_response>\n"
+                                    f"{synthetic_ioi_ablation_response(head_id)}\n"
+                                    "</tool_response>"
+                                ),
+                            },
+                        ]
+                    )
+                messages.append(
+                    {
+                        "role": "assistant",
+                        "content": tool_call("submit_circuit", {"heads": ioi_target_heads()}),
+                    }
+                )
+                text = tokenizer.apply_chat_template(
+                    messages,
+                    tools=tools,
+                    tokenize=False,
+                    add_generation_prompt=False,
+                    chat_template_kwargs={"enable_thinking": False},
+                )
+                records.append({"text": text})
+                record_index += 1
+                continue
+
+            inspect_response = synthetic_inspect_response(target_head, scenario=record_scenario)
+            ablation_response = synthetic_ablation_response(target_head, scenario=record_scenario)
+            use_ablation = record_scenario == "phase2" or repeat % 2 == 1
             messages: list[dict[str, str]] = [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": f"{user_prompt}\n{reset_observation}"},
@@ -433,6 +592,7 @@ def build_sft_records(
                 chat_template_kwargs={"enable_thinking": False},
             )
             records.append({"text": text})
+            record_index += 1
 
     return records
 

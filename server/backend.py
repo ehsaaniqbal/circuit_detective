@@ -244,6 +244,99 @@ class RandomizedPlantedCircuitBackend:
         return [self._target]
 
 
+class PublishedIOICircuitBackend:
+    """
+    Fast IOI name-mover circuit arena using published GPT-2-small head ids.
+
+    This backend is intentionally deterministic and lightweight for RL training:
+    it scores the agent against the Name Mover heads reported in the IOI circuit
+    paper, while exposing distractor heads from adjacent IOI circuit roles.
+    It is not a live TransformerLens GPT-2-small forward pass.
+    """
+
+    scenario_id = "ioi_gpt2_small_name_mover"
+    max_steps = 12
+
+    NAME_MOVER_HEADS = [Head(9, 9), Head(9, 6), Head(10, 0)]
+    S_INHIBITION_HEADS = [Head(7, 3), Head(7, 9), Head(8, 6), Head(8, 10)]
+    NEGATIVE_NAME_MOVER_HEADS = [Head(10, 7), Head(11, 10)]
+    BACKUP_NAME_MOVER_HEADS = [
+        Head(9, 0),
+        Head(9, 7),
+        Head(10, 1),
+        Head(10, 2),
+        Head(10, 6),
+        Head(10, 10),
+        Head(11, 2),
+        Head(11, 9),
+    ]
+
+    def __init__(self) -> None:
+        self._baseline_behavior = 1.0
+        self._scores = self._build_scores()
+        self._deltas = self._build_deltas()
+
+    def run_probe(self) -> ProbeResult:
+        return ProbeResult(
+            baseline_behavior=self._baseline_behavior,
+            probe_batch_size=16,
+            probe_seq_len=15,
+        )
+
+    def inspect_induction_scores(self, top_k: int = 8) -> list[HeadScore]:
+        return self._scores[:top_k]
+
+    def ablate_head(self, head: Head) -> AblationResult:
+        delta = self._deltas.get(head.head_id, 0.005)
+        return AblationResult(
+            head=head,
+            baseline_behavior=self._baseline_behavior,
+            ablated_behavior=self._baseline_behavior - delta,
+            behavior_delta=delta,
+        )
+
+    def ground_truth_heads(self) -> list[Head]:
+        return self.NAME_MOVER_HEADS
+
+    def _build_scores(self) -> list[HeadScore]:
+        scored_heads: list[tuple[Head, float]] = [
+            (Head(9, 9), 0.97),
+            (Head(10, 0), 0.94),
+            (Head(9, 6), 0.92),
+            (Head(10, 10), 0.74),
+            (Head(10, 6), 0.71),
+            (Head(7, 3), 0.68),
+            (Head(8, 10), 0.65),
+            (Head(10, 7), 0.61),
+            (Head(11, 10), 0.59),
+            (Head(11, 2), 0.54),
+            (Head(9, 7), 0.52),
+            (Head(8, 6), 0.50),
+        ]
+        return [HeadScore(head=head, score=score) for head, score in scored_heads]
+
+    def _build_deltas(self) -> dict[str, float]:
+        deltas = {
+            head.head_id: 0.015
+            for layer in range(12)
+            for head in [Head(layer=layer, head=index) for index in range(12)]
+        }
+        deltas.update(
+            {
+                "L9H9": 0.34,
+                "L10H0": 0.31,
+                "L9H6": 0.29,
+                "L10H10": 0.12,
+                "L10H6": 0.10,
+                "L7H3": 0.09,
+                "L8H10": 0.08,
+                "L10H7": -0.08,
+                "L11H10": -0.07,
+            }
+        )
+        return deltas
+
+
 class TransformerLensSubprocessBackend:
     """
     Phase 1 backend for induction localization on TransformerLens' attn-only-2l.

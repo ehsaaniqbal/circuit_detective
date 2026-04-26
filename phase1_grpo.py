@@ -7,10 +7,16 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 from .models import CircuitDetectiveAction
-from .server.backend import CircuitBackend, RandomizedPlantedCircuitBackend, get_default_backend
+from .server.backend import (
+    CircuitBackend,
+    PublishedIOICircuitBackend,
+    RandomizedPlantedCircuitBackend,
+    get_default_backend,
+)
 from .server.circuit_detective_environment import (
     CAUSAL_DELTA_THRESHOLD,
     CircuitDetectiveEnvironment,
+    IOI_CAUSAL_DELTA_THRESHOLD,
     PLANTED_CAUSAL_DELTA_THRESHOLD,
 )
 
@@ -150,6 +156,58 @@ PLANTED_USER_PROMPT_VARIANTS = [
     ),
 ]
 
+IOI_SYSTEM_PROMPT = (
+    "You are a mechanistic-interpretability agent investigating the IOI "
+    "name-mover component in GPT-2 small. Inspect candidate head effects, "
+    "ablate at least one supporting name-mover head, then submit exactly the "
+    "name-mover heads as a list. This is a multi-head circuit task."
+)
+
+IOI_USER_PROMPT_VARIANTS = [
+    (
+        "Find the IOI name-mover component. Inspect candidate heads, verify with "
+        "ablation, and submit the complete name-mover head set."
+    ),
+    (
+        "Identify the GPT-2-small heads that move the indirect-object name in the "
+        "IOI circuit. Submit all and only the name-mover heads."
+    ),
+    (
+        "Solve the IOI stretch task: use the tools to localize the name-mover "
+        "heads and submit the multi-head circuit."
+    ),
+    (
+        "Do not submit a single head. The IOI name-mover component has multiple "
+        "heads; inspect, ablate, and submit the full component."
+    ),
+]
+
+CURRICULUM_SYSTEM_PROMPT = (
+    "You are a mechanistic-interpretability agent. Each episode may be a toy "
+    "induction, planted-circuit, or IOI component task. Read the reset "
+    "observation, use tools to gather evidence, ablate when causal validation is "
+    "required, and submit the requested circuit."
+)
+
+CURRICULUM_USER_PROMPT_VARIANTS = [
+    (
+        "Solve the current circuit task. Use the observation to infer whether this "
+        "is a single-head or multi-head scenario."
+    ),
+    (
+        "Investigate the active scenario with the tools, verify causal evidence "
+        "when needed, and submit the final circuit."
+    ),
+    (
+        "Generalize your circuit-detective policy across this episode. Inspect, "
+        "intervene if required, and submit the supported heads."
+    ),
+    (
+        "Do the current mechanistic-interpretability task end to end. Avoid fixed "
+        "answers; follow the evidence in the tool outputs."
+    ),
+]
+
 _REWARD_TRACE: list[dict[str, Any]] = []
 
 
@@ -178,7 +236,13 @@ def build_phase1_dataset(repeats_per_prompt: int = 16, *, scenario: str = "phase
     prompts: list[list[dict[str, str]]] = []
     variant_ids: list[int] = []
 
-    if scenario == "planted":
+    if scenario == "curriculum":
+        system_prompt = CURRICULUM_SYSTEM_PROMPT
+        user_prompts = CURRICULUM_USER_PROMPT_VARIANTS
+    elif scenario == "ioi":
+        system_prompt = IOI_SYSTEM_PROMPT
+        user_prompts = IOI_USER_PROMPT_VARIANTS
+    elif scenario == "planted":
         system_prompt = PLANTED_SYSTEM_PROMPT
         user_prompts = PLANTED_USER_PROMPT_VARIANTS
     elif scenario == "phase2":
@@ -385,8 +449,20 @@ class CircuitDetectiveToolEnv:
             and ablate_submitted
             and max_submitted_delta >= self.causal_delta_threshold
         )
+        scenario_id = ""
+        if self.last_observation is not None:
+            scenario_id = getattr(self.last_observation, "scenario_id", "")
         return {
+            "scenario_id": scenario_id,
             "reward": reward,
+            "rubric": self._rubric_breakdown(
+                reward=reward,
+                terminal_score=terminal_score,
+                submitted=bool(submitted_heads),
+                causal_success=causal_success,
+                ablate_submitted=ablate_submitted,
+                max_submitted_delta=max_submitted_delta,
+            ),
             "done": self.done,
             "submitted": "submit_circuit" in tools,
             "correct": terminal_score.get("f1", 0.0) == 1.0,
@@ -402,6 +478,36 @@ class CircuitDetectiveToolEnv:
             "ablate_submitted": ablate_submitted,
             "ablation_faithfulness": max_submitted_delta,
             "causal_success": causal_success,
+        }
+
+    def _rubric_breakdown(
+        self,
+        *,
+        reward: float,
+        terminal_score: dict[str, float],
+        submitted: bool,
+        causal_success: bool,
+        ablate_submitted: bool,
+        max_submitted_delta: float,
+    ) -> dict[str, float]:
+        tools = [item["tool_name"] for item in self.tool_trace]
+        evidence = 1.0 if "inspect_induction_scores" in tools else 0.0
+        intervention = 1.0 if "ablate_head" in tools else 0.0
+        final_answer = terminal_score.get("f1", 0.0) if submitted else 0.0
+        causal = 0.0
+        if not self.require_ablation:
+            causal = 1.0 if submitted else 0.0
+        elif causal_success:
+            causal = 1.0
+        elif ablate_submitted:
+            causal = min(max_submitted_delta / self.causal_delta_threshold, 1.0)
+        return {
+            "tool_format": 1.0 if self.tool_trace else 0.0,
+            "evidence_gathering": evidence,
+            "intervention": intervention,
+            "causal_validation": causal,
+            "final_answer_f1": final_answer,
+            "scalar_reward": reward,
         }
 
     def _trainer_step_reward(
@@ -552,3 +658,39 @@ class PlantedCircuitToolEnv(CircuitDetectiveToolEnv):
             require_ablation=True,
             causal_delta_threshold=PLANTED_CAUSAL_DELTA_THRESHOLD,
         )
+
+
+class IOICircuitToolEnv(CircuitDetectiveToolEnv):
+    """TRL tool wrapper for the IOI name-mover stretch curriculum."""
+
+    def __init__(
+        self,
+        backend_factory: Callable[[], CircuitBackend] | None = None,
+    ) -> None:
+        super().__init__(
+            backend_factory=backend_factory or PublishedIOICircuitBackend,
+            require_ablation=True,
+            causal_delta_threshold=IOI_CAUSAL_DELTA_THRESHOLD,
+        )
+
+
+class CurriculumCircuitToolEnv(CircuitDetectiveToolEnv):
+    """Balanced planted-plus-IOI curriculum for multi-task GRPO."""
+
+    _instance_counter = 0
+
+    def __init__(self) -> None:
+        index = CurriculumCircuitToolEnv._instance_counter
+        CurriculumCircuitToolEnv._instance_counter += 1
+        if index % 2 == 0:
+            super().__init__(
+                backend_factory=RandomizedPlantedCircuitBackend,
+                require_ablation=True,
+                causal_delta_threshold=PLANTED_CAUSAL_DELTA_THRESHOLD,
+            )
+        else:
+            super().__init__(
+                backend_factory=PublishedIOICircuitBackend,
+                require_ablation=True,
+                causal_delta_threshold=IOI_CAUSAL_DELTA_THRESHOLD,
+            )

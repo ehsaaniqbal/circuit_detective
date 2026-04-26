@@ -18,8 +18,10 @@ from .rewards import compute_submission_score
 
 PHASE2_SCENARIO_ID = "l2_ablation_required"
 PLANTED_SCENARIO_ID = "planted_circuit_arena"
+IOI_SCENARIO_ID = "ioi_gpt2_small_name_mover"
 CAUSAL_DELTA_THRESHOLD = 1e-5
 PLANTED_CAUSAL_DELTA_THRESHOLD = 0.10
+IOI_CAUSAL_DELTA_THRESHOLD = 0.10
 
 
 class CircuitDetectiveEnvironment(Environment):
@@ -58,7 +60,17 @@ class CircuitDetectiveEnvironment(Environment):
         self._submitted_heads = []
         self._inspected_heads = set()
         self._ablation_deltas = {}
-        if self._backend.scenario_id == PLANTED_SCENARIO_ID:
+        if self._backend.scenario_id == IOI_SCENARIO_ID:
+            summary = (
+                "IOI Name-Mover Arena: identify the GPT-2-small name-mover heads "
+                "from a published IOI circuit target. Inspect candidate effects, "
+                "ablate supporting heads, then submit the name-mover component."
+            )
+            goal = (
+                "Submit exactly the IOI name-mover heads as ['LxHy', ...]. "
+                "Ablation is required for causal credit."
+            )
+        elif self._backend.scenario_id == PLANTED_SCENARIO_ID:
             summary = (
                 "Planted Circuit Arena: inspect scores are noisy and may rank a decoy first. "
                 "Use ablation to find the causally planted head, then submit_circuit."
@@ -186,11 +198,17 @@ class CircuitDetectiveEnvironment(Environment):
         top_k = int(arguments.get("top_k", 8))
         scores = [item.to_dict() for item in self._backend.inspect_induction_scores(top_k=top_k)]
         self._inspected_heads.update(str(item["head_id"]) for item in scores)
-        return self._make_observation(
-            summary=(
+        summary = (
+            f"Returned the top {len(scores)} IOI candidate heads ranked by name-mover effect. "
+            "Use ablation evidence before submitting the multi-head circuit."
+            if self._backend.scenario_id == IOI_SCENARIO_ID
+            else (
                 f"Returned the top {len(scores)} heads ranked by induction score. "
                 "Use the strongest supported head in submit_circuit before the budget ends."
-            ),
+            )
+        )
+        return self._make_observation(
+            summary=summary,
             result={"scores": scores},
             reward=0.01,
             done=False,
@@ -316,6 +334,8 @@ class CircuitDetectiveEnvironment(Environment):
     def _scenario_id(self) -> str:
         if self._backend.scenario_id == PLANTED_SCENARIO_ID:
             return PLANTED_SCENARIO_ID
+        if self._backend.scenario_id == IOI_SCENARIO_ID:
+            return IOI_SCENARIO_ID
         if self._require_ablation:
             return PHASE2_SCENARIO_ID
         return self._backend.scenario_id

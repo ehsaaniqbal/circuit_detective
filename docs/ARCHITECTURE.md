@@ -1,18 +1,18 @@
 # Circuit Detective Architecture
 
-This document describes the current implementation layout and runtime setup. It is intentionally implementation-facing rather than a submission writeup.
+This is a compact implementation map for the current repo.
 
-## High-Level Shape
+## Layers
 
 Circuit Detective has three main layers:
 
-1. **OpenEnv environment layer**: exposes a Gym-style `reset`, `step`, and `state` interface for validation and the Hugging Face Space.
-2. **Circuit backend layer**: computes probe scores, head rankings, ablation deltas, and ground-truth scoring for frozen target models or synthetic arenas.
-3. **Training layer**: wraps the same tool surface for HF TRL SFT/GRPO training on `Qwen/Qwen3.5-2B`.
+1. **OpenEnv environment**: `server/circuit_detective_environment.py` implements `CircuitDetectiveEnvironment(Environment)` with `reset`, `step`, and `state`.
+2. **Circuit backends**: `server/backend.py` provides probe, inspection, ablation, and ground-truth scoring backends.
+3. **Training wrappers**: `phase1_grpo.py` and `scripts/` adapt the same tool surface for TRL SFT/GRPO training.
 
-The core design is deterministic: the environment computes rewards from known circuit targets and ablation evidence. There is no LLM-as-judge reward.
+Rewards are deterministic. The environment does not use LLM-as-judge scoring.
 
-## Repository Layout
+## Runtime Layout
 
 ```text
 circuit_detective/
@@ -33,28 +33,16 @@ circuit_detective/
 │   ├── validator_smoke.py
 │   └── analyze_phase1_run.py
 ├── notebooks/
-│   └── phase1_qwen35_2b_grpo.ipynb
-├── tests/
-└── artifacts/
+├── assets/
+├── artifacts/
+└── tests/
 ```
 
-Important docs:
+## OpenEnv Surface
 
-- `docs/phase_plan.md`: execution plan and gates.
-- `docs/log.md`: experiment log, including failed Phase 2 attempts.
-- `docs/writeup.md`: draft narrative.
-- `docs/circuit_detective_brief.md`: original project spec.
+`server/app.py` builds the FastAPI/OpenEnv app via `openenv.core.env_server.http_server.create_app`.
 
-## OpenEnv Runtime
-
-The OpenEnv server is built in `server/app.py`.
-
-- `server/app.py` calls `openenv.core.env_server.http_server.create_app`.
-- `server/circuit_detective_environment.py` defines `CircuitDetectiveEnvironment(Environment)`.
-- `models.py` defines typed action/observation payloads.
-- `openenv.yaml` is the parseable OpenEnv manifest.
-
-The environment exposes this tool surface:
+The agent interacts through five tools:
 
 - `list_tools`
 - `run_probe`
@@ -62,79 +50,36 @@ The environment exposes this tool surface:
 - `ablate_head`
 - `submit_circuit`
 
-Each episode is a tool-use trajectory. The agent observes summaries/results, chooses tool calls, and receives deterministic reward. `submit_circuit` ends the episode and computes final score.
+`submit_circuit` terminates the episode and computes the deterministic score.
 
-## Backend Layer
+## Backends
 
-Backend contracts live in `server/backend.py`.
-
-The environment depends on a small `CircuitBackend` protocol:
+`server/backend.py` defines the backend contract:
 
 - `run_probe()`
 - `inspect_induction_scores(top_k)`
 - `ablate_head(head)`
 - `ground_truth_heads()`
 
-Implemented backend paths include:
+Implemented paths include the Phase 1 TransformerLens induction backend, planted/planted-lite synthetic causal arenas, and IOI stretch backends. TransformerLens runs through a `.venv-tlens` sidecar process because `openenv-core` and `transformer-lens` currently have dependency constraints that are cleaner to isolate.
 
-- `FakeInductionBackend`: deterministic unit-test backend.
-- TransformerLens induction backend: uses `server/tlens_worker.py`.
-- Planted-circuit and planted-lite synthetic backends: exact ground truth with decoy heads.
-- IOI stretch backends: fast deterministic IOI/name-mover and real TransformerLens GPT-2-small smoke path.
+## Training
 
-The deployed backend uses a sidecar Python environment for TransformerLens because `openenv-core` and `transformer-lens` currently have dependency constraints that do not cleanly resolve in one environment. The sidecar path is `.venv-tlens`, launched through worker scripts.
+Canonical training used:
 
-## Training Runtime
+- Agent model: `Qwen/Qwen3.5-2B`
+- Trainer: HF TRL `SFTTrainer` + `GRPOTrainer`
+- Adapter stack: PEFT LoRA with bitsandbytes 4-bit loading
+- Compute: HF Jobs `a10g-large`
 
-Training is separate from the OpenEnv HTTP server.
+Main entrypoints:
 
-Main training files:
+- `notebooks/phase1_qwen35_2b_grpo.ipynb`
+- `scripts/phase1_sft.py`
+- `scripts/phase1_train.py`
+- `scripts/hf_phase1_job.py`
 
-- `phase1_grpo.py`: TRL-compatible tool environment classes.
-- `scripts/phase1_sft.py`: SFT warm-start generation/training.
-- `scripts/phase1_train.py`: GRPO training/eval.
-- `scripts/hf_phase1_job.py`: HF Jobs launcher that can run SFT then GRPO in one job.
-
-The current successful path uses:
-
-- Base agent model: `Qwen/Qwen3.5-2B`.
-- Trainer: HF TRL `SFTTrainer` and `GRPOTrainer`.
-- Adapter stack: PEFT LoRA with bitsandbytes 4-bit loading.
-- Platform: Hugging Face Jobs, usually `a10g-large`.
-
-Unsloth was considered for speed/memory, but the successful runs used the TRL + PEFT/bitsandbytes path.
-
-## Scenarios
-
-Current scenario IDs are defined in `server/circuit_detective_environment.py`.
-
-- `l1_induction_attn_only_2l`: Phase 1 toy induction task on TransformerLens `attn-only-2l`.
-- `l2_ablation_required`: Phase 2 variant requiring ablation evidence before full credit.
-- `planted_circuit_arena`: randomized planted target and decoy heads.
-- `planted_lite_causal_chain`: final minimal causal-chain Phase 2 task.
-- `ioi_gpt2_small_name_mover`: fast IOI/name-mover stretch arena.
-- `ioi_gpt2_small_real`: real TransformerLens GPT-2-small IOI smoke path.
-
-The current strongest Phase 2 evidence is `planted_lite_causal_chain`, where the top inspected head is a decoy and the correct head is determined by ablation delta.
-
-## Reward And Metrics
-
-The OpenEnv reward is deterministic. Trainer-side wrappers add dense shaping so GRPO gets useful signal before terminal submission.
-
-Important evaluation metrics:
-
-- `success_rate`
-- `causal_success_rate`
-- `submit_rate`
-- `ablate_rate`
-- `ablate_submitted_rate`
-- `submitted_after_all_candidates_rate`
-- `submitted_best_ablated_head_rate`
-- `terminal_ready_no_submit_rate`
-- `mean_reward`
-- `mean_f1`
-
-Phase 2 failures taught us that ordinary success/F1 can be misleading. The key Phase 2 metric is `causal_success_rate`: did the agent actually ablate and submit the causally supported head?
+Unsloth was considered, but the canonical successful runs use HF TRL + PEFT/bitsandbytes.
 
 ## Current Evidence
 
@@ -143,10 +88,9 @@ Phase 1 canonical adapter:
 - `ehsaaniqbal/circuit-detective-qwen35-2b-phase1-sft64-grpo200-lora`
 - Artifacts: `artifacts/phase1_sft64_grpo200_a10g_large/`
 
-Final planted-lite Phase 2 run:
+Phase 2 planted-lite adapter:
 
-- HF Job: `ehsaaniqbal/69edc4ddd2c8bd8662bcf87c`
-- Adapter: `ehsaaniqbal/circuit-detective-qwen35-2b-planted-lite-naive-max-lora`
+- `ehsaaniqbal/circuit-detective-qwen35-2b-planted-lite-naive-max-lora`
 - Artifacts: `artifacts/planted_lite_naive_max_sft1536_grpo300_ctx1024/`
 
 Final planted-lite result on 256 eval rollouts:
@@ -159,42 +103,34 @@ Final planted-lite result on 256 eval rollouts:
 | Submitted best ablated head | 95.3% | 97.7% |
 | Mean reward | 4.70 | 4.87 |
 
-The honest interpretation is that targeted SFT solved most of the interaction protocol, and GRPO cleaned it up further. The result should not be described as RL discovering the full behavior from scratch.
+Honest interpretation: targeted SFT solves most of the Phase 2 interaction protocol; GRPO improves an already-high policy. Do not claim RL discovered the whole behavior from scratch.
 
-## Demo And Deployment
+## Demo
 
-The Hugging Face Space runs the Docker/OpenEnv server and registers a lightweight judge-facing demo in `server/demo.py`.
+`server/demo.py` adds judge-facing routes on top of the OpenEnv app:
 
-Demo routes:
+- `/`: HTML demo UI
+- `/demo/reset`: start a planted-lite case
+- `/demo/step`: issue a tool action
+- `/demo/baseline`: rank-only baseline trace
+- `/demo/protocol`: causal protocol trace
+- `/demo/results`: load result snapshots
 
-- `/`: HTML demo UI.
-- `/demo/reset`: start a planted-lite case.
-- `/demo/step`: manually issue a tool action.
-- `/demo/baseline`: show rank-only baseline behavior.
-- `/demo/protocol`: show the causal protocol behavior.
-- `/demo/results`: load result snapshots from artifacts.
-
-The intended demo story is simple:
+The demo story is:
 
 ```text
-inspect two candidate heads -> top-ranked head is decoy
+inspect candidates -> top-ranked head is decoy
 ablate both heads -> one has larger behavior_delta
 submit max-delta head -> causal success
 ```
 
-## Validation Path
+## Validation
 
-Key validation files:
-
-- `scripts/validator_smoke.py`: simulates the validator path.
-- `scripts/smoke_rollout.py`: quick local rollout.
-- `tests/`: unit tests for environment, demo, SFT generation, and run analysis.
-
-Minimum health check:
+Minimum local checks:
 
 ```bash
 uv run python scripts/validator_smoke.py
 uv run pytest
 ```
 
-For training evidence, committed `.png` curves and JSON metrics live under `artifacts/`.
+Training evidence lives in committed `.png` curves and JSON metrics under `artifacts/`, with polished README/blog plots under `assets/`.

@@ -17,7 +17,7 @@ from .rewards import compute_submission_score
 
 
 PHASE2_SCENARIO_ID = "l2_ablation_required"
-CAUSAL_DELTA_THRESHOLD = 0.05
+CAUSAL_DELTA_THRESHOLD = 1e-5
 
 
 class CircuitDetectiveEnvironment(Environment):

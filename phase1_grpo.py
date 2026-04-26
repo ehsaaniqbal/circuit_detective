@@ -308,7 +308,7 @@ class CircuitDetectiveToolEnv:
         """Return the scalar reward consumed by GRPO for the completed rollout."""
         reward = self.cumulative_reward
         if not self.done:
-            reward -= 0.35
+            reward -= 1.05 if self.require_ablation else 0.35
             if not self.tool_trace:
                 reward -= 0.15
         return max(min(reward, 1.5), -1.0)
@@ -437,7 +437,10 @@ class CircuitDetectiveToolEnv:
         if not submitted_deltas:
             return -0.45
         if max(submitted_deltas) >= CAUSAL_DELTA_THRESHOLD:
-            return env_reward + 0.45
+            bonus = 0.70
+            if submitted and self._best_seen_head in submitted:
+                bonus += 0.15
+            return env_reward + bonus
         return 0.05
 
     def _terminal_score(self) -> dict[str, float]:

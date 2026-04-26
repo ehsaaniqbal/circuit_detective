@@ -32,17 +32,26 @@ def test_synthetic_inspect_response_exposes_target_head_first() -> None:
 def test_planted_synthetic_inspect_uses_decoy_first_and_target_later() -> None:
     target, decoys = phase1_sft.planted_heads_for_record(0)
 
-    payload = json.loads(
+    rank_two_payload = json.loads(
         phase1_sft.synthetic_planted_inspect_response(
             target_head=target,
             decoy_heads=decoys,
+            target_position=1,
+        )
+    )
+    rank_three_payload = json.loads(
+        phase1_sft.synthetic_planted_inspect_response(
+            target_head=target,
+            decoy_heads=decoys,
+            target_position=2,
         )
     )
 
-    assert payload["scenario_id"] == "planted_circuit_arena"
-    assert payload["result"]["scores"][0]["head_id"] == decoys[0]
-    assert payload["result"]["scores"][0]["head_id"] != target
-    assert payload["result"]["scores"][2]["head_id"] == target
+    assert rank_two_payload["scenario_id"] == "planted_circuit_arena"
+    assert rank_two_payload["result"]["scores"][0]["head_id"] == decoys[0]
+    assert rank_two_payload["result"]["scores"][0]["head_id"] != target
+    assert rank_two_payload["result"]["scores"][1]["head_id"] == target
+    assert rank_three_payload["result"]["scores"][2]["head_id"] == target
 
 
 def test_planted_synthetic_ablation_marks_only_target_as_causal() -> None:

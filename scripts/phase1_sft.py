@@ -134,13 +134,34 @@ def planted_heads_for_record(index: int) -> tuple[str, list[str]]:
     return target, decoys
 
 
+def planted_candidate_order(
+    *,
+    target_head: str,
+    decoy_heads: list[str],
+    target_position: int,
+) -> list[str]:
+    if len(decoy_heads) < 2:
+        raise ValueError("Planted SFT examples require at least two decoy heads.")
+    if target_position == 1:
+        return [decoy_heads[0], target_head, decoy_heads[1]]
+    if target_position == 2:
+        return [decoy_heads[0], decoy_heads[1], target_head]
+    raise ValueError("target_position must be 1 or 2 so the top-ranked head stays a decoy.")
+
+
 def synthetic_planted_inspect_response(
     *,
     target_head: str,
     decoy_heads: list[str],
+    target_position: int = 2,
 ) -> str:
     scores: list[dict[str, float | int | str]] = []
-    for score, head_id in zip([0.96, 0.88, 0.82], [decoy_heads[0], decoy_heads[1], target_head]):
+    candidate_order = planted_candidate_order(
+        target_head=target_head,
+        decoy_heads=decoy_heads,
+        target_position=target_position,
+    )
+    for score, head_id in zip([0.96, 0.88, 0.82], candidate_order):
         layer, head = parse_head_id(head_id)
         scores.append(
             {
@@ -309,9 +330,16 @@ def build_sft_records(
         for repeat in range(examples_per_prompt):
             if scenario == "planted":
                 planted_target, planted_decoys = planted_heads_for_record(record_index)
+                target_position = 1 if record_index % 2 == 0 else 2
+                candidate_order = planted_candidate_order(
+                    target_head=planted_target,
+                    decoy_heads=planted_decoys,
+                    target_position=target_position,
+                )
                 planted_inspect = synthetic_planted_inspect_response(
                     target_head=planted_target,
                     decoy_heads=planted_decoys,
+                    target_position=target_position,
                 )
                 messages = [
                     {"role": "system", "content": system_prompt},
@@ -322,45 +350,30 @@ def build_sft_records(
                     },
                     {"role": "user", "content": f"<tool_response>\n{planted_inspect}\n</tool_response>"},
                 ]
-                for decoy in planted_decoys:
-                    decoy_layer, decoy_head = parse_head_id(decoy)
+                for candidate_head in candidate_order:
+                    candidate_layer, candidate_index = parse_head_id(candidate_head)
+                    is_target = candidate_head == planted_target
                     messages.extend(
                         [
                             {
                                 "role": "assistant",
                                 "content": tool_call(
                                     "ablate_head",
-                                    {"layer": decoy_layer, "head": decoy_head},
+                                    {"layer": candidate_layer, "head": candidate_index},
                                 ),
                             },
                             {
                                 "role": "user",
                                 "content": (
                                     "<tool_response>\n"
-                                    f"{synthetic_planted_ablation_response(head_id=decoy, is_target=False)}\n"
+                                    f"{synthetic_planted_ablation_response(head_id=candidate_head, is_target=is_target)}\n"
                                     "</tool_response>"
                                 ),
                             },
                         ]
                     )
-                planted_layer, planted_head = parse_head_id(planted_target)
                 messages.extend(
                     [
-                        {
-                            "role": "assistant",
-                            "content": tool_call(
-                                "ablate_head",
-                                {"layer": planted_layer, "head": planted_head},
-                            ),
-                        },
-                        {
-                            "role": "user",
-                            "content": (
-                                "<tool_response>\n"
-                                f"{synthetic_planted_ablation_response(head_id=planted_target, is_target=True)}\n"
-                                "</tool_response>"
-                            ),
-                        },
                         {
                             "role": "assistant",
                             "content": tool_call("submit_circuit", {"heads": [planted_target]}),

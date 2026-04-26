@@ -372,6 +372,11 @@ class RealIOITransformerLensBackend:
         return self._client.ground_truth_heads()
 
 
+@lru_cache(maxsize=1)
+def get_real_ioi_backend() -> RealIOITransformerLensBackend:
+    return RealIOITransformerLensBackend()
+
+
 class TransformerLensSubprocessBackend:
     """
     Phase 1 backend for induction localization on TransformerLens' attn-only-2l.

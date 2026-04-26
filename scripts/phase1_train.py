@@ -11,6 +11,7 @@ from circuit_detective.phase1_grpo import (
     IOICircuitToolEnv,
     Phase2CircuitDetectiveToolEnv,
     PlantedCircuitToolEnv,
+    RealIOICircuitToolEnv,
     build_phase1_dataset,
     consume_reward_trace,
     reward_func,
@@ -35,7 +36,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lora-rank", type=int, default=8)
     parser.add_argument(
         "--scenario",
-        choices=["phase1", "phase2", "planted", "ioi", "curriculum"],
+        choices=["phase1", "phase2", "planted", "ioi", "curriculum", "real_ioi"],
         default="phase1",
         help="Training curriculum level. phase2 requires ablation before full credit.",
     )
@@ -377,6 +378,7 @@ def main() -> None:
             "planted": PlantedCircuitToolEnv,
             "ioi": IOICircuitToolEnv,
             "curriculum": CurriculumCircuitToolEnv,
+            "real_ioi": RealIOICircuitToolEnv,
         }[args.scenario],
         **trainer_kwargs,
     )

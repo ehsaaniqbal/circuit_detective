@@ -38,7 +38,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--scenario",
-        choices=["phase1", "phase2", "planted", "ioi", "curriculum"],
+        choices=["phase1", "phase2", "planted", "ioi", "curriculum", "real_ioi"],
         default="phase1",
         help="Warm-start curriculum level. phase2 examples always include ablation.",
     )
@@ -57,7 +57,7 @@ def tool_call(name: str, parameters: dict[str, Any]) -> str:
 def synthetic_reset_observation(*, scenario: str) -> str:
     is_phase2 = scenario == "phase2"
     is_planted = scenario == "planted"
-    is_ioi = scenario == "ioi"
+    is_ioi = scenario in {"ioi", "real_ioi"}
     remaining_budget = 10 if is_planted else 12
     if is_ioi:
         remaining_budget = 12
@@ -90,16 +90,20 @@ def synthetic_reset_observation(*, scenario: str) -> str:
                 ),
                 "requires_ablation": is_phase2 or is_planted or is_ioi,
                 "scenario": (
-                    "ioi_gpt2_small_name_mover"
-                    if is_ioi
+                    "ioi_gpt2_small_real"
+                    if scenario == "real_ioi"
+                    else "ioi_gpt2_small_name_mover"
+                    if scenario == "ioi"
                     else "planted_circuit_arena"
                     if is_planted
                     else "l1_induction_attn_only_2l"
                 ),
             },
             "scenario_id": (
-                "ioi_gpt2_small_name_mover"
-                if is_ioi
+                "ioi_gpt2_small_real"
+                if scenario == "real_ioi"
+                else "ioi_gpt2_small_name_mover"
+                if scenario == "ioi"
                 else "planted_circuit_arena"
                 if is_planted
                 else "l2_ablation_required"
@@ -255,7 +259,7 @@ def ioi_target_heads() -> list[str]:
     return ["L9H9", "L9H6", "L10H0"]
 
 
-def synthetic_ioi_inspect_response() -> str:
+def synthetic_ioi_inspect_response(*, scenario_id: str = "ioi_gpt2_small_name_mover") -> str:
     ranked_heads = [
         ("L9H9", 0.97),
         ("L10H0", 0.94),
@@ -289,7 +293,7 @@ def synthetic_ioi_inspect_response() -> str:
             "done": False,
             "remaining_budget": 11,
             "result": {"scores": scores},
-            "scenario_id": "ioi_gpt2_small_name_mover",
+            "scenario_id": scenario_id,
             "step_count": 1,
             "summary": "Returned candidate IOI head effects for the name-mover component.",
         },
@@ -297,7 +301,11 @@ def synthetic_ioi_inspect_response() -> str:
     )
 
 
-def synthetic_ioi_ablation_response(head_id: str) -> str:
+def synthetic_ioi_ablation_response(
+    head_id: str,
+    *,
+    scenario_id: str = "ioi_gpt2_small_name_mover",
+) -> str:
     layer, head = parse_head_id(head_id)
     delta = {"L9H9": 0.34, "L10H0": 0.31, "L9H6": 0.29}.get(head_id, 0.02)
     return json.dumps(
@@ -319,7 +327,7 @@ def synthetic_ioi_ablation_response(head_id: str) -> str:
                 "head": head,
                 "layer": layer,
             },
-            "scenario_id": "ioi_gpt2_small_name_mover",
+            "scenario_id": scenario_id,
             "step_count": 2,
             "summary": f"Ablated IOI candidate {head_id}; behavior_delta={delta}.",
         },
@@ -413,7 +421,7 @@ def build_sft_records(
     if scenario == "curriculum":
         system_prompt = CURRICULUM_SYSTEM_PROMPT
         user_prompts = CURRICULUM_USER_PROMPT_VARIANTS
-    elif scenario == "ioi":
+    elif scenario in {"ioi", "real_ioi"}:
         system_prompt = IOI_SYSTEM_PROMPT
         user_prompts = IOI_USER_PROMPT_VARIANTS
     elif scenario == "planted":
@@ -497,7 +505,12 @@ def build_sft_records(
                 record_index += 1
                 continue
 
-            if record_scenario == "ioi":
+            if record_scenario in {"ioi", "real_ioi"}:
+                ioi_scenario_id = (
+                    "ioi_gpt2_small_real"
+                    if record_scenario == "real_ioi"
+                    else "ioi_gpt2_small_name_mover"
+                )
                 messages = [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": f"{user_prompt}\n{reset_observation}"},
@@ -507,7 +520,11 @@ def build_sft_records(
                     },
                     {
                         "role": "user",
-                        "content": f"<tool_response>\n{synthetic_ioi_inspect_response()}\n</tool_response>",
+                        "content": (
+                            "<tool_response>\n"
+                            f"{synthetic_ioi_inspect_response(scenario_id=ioi_scenario_id)}\n"
+                            "</tool_response>"
+                        ),
                     },
                 ]
                 for head_id in ioi_target_heads():
@@ -525,7 +542,7 @@ def build_sft_records(
                                 "role": "user",
                                 "content": (
                                     "<tool_response>\n"
-                                    f"{synthetic_ioi_ablation_response(head_id)}\n"
+                                    f"{synthetic_ioi_ablation_response(head_id, scenario_id=ioi_scenario_id)}\n"
                                     "</tool_response>"
                                 ),
                             },

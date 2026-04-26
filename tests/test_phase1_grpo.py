@@ -7,6 +7,7 @@ from circuit_detective.phase1_grpo import CurriculumCircuitToolEnv
 from circuit_detective.phase1_grpo import IOICircuitToolEnv
 from circuit_detective.phase1_grpo import Phase2CircuitDetectiveToolEnv
 from circuit_detective.phase1_grpo import PlantedCircuitToolEnv
+from circuit_detective.phase1_grpo import RealIOICircuitToolEnv
 from circuit_detective.phase1_grpo import consume_reward_trace, reset_reward_trace, reward_func
 from circuit_detective.server.backend import FakeInductionBackend, Head, RandomizedPlantedCircuitBackend
 
@@ -231,3 +232,11 @@ def test_curriculum_wrapper_cycles_between_planted_and_ioi() -> None:
 
     assert first_payload["scenario_id"] == "planted_circuit_arena"
     assert second_payload["scenario_id"] == "ioi_gpt2_small_name_mover"
+
+
+def test_real_ioi_wrapper_uses_real_scenario_without_loading_model_on_reset() -> None:
+    env = RealIOICircuitToolEnv()
+
+    payload = json.loads(env.reset() or "{}")
+
+    assert payload["scenario_id"] == "ioi_gpt2_small_real"

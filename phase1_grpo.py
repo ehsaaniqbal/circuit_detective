@@ -13,6 +13,7 @@ from .server.backend import (
     RandomizedPlantedCircuitBackend,
     RealIOITransformerLensBackend,
     get_default_backend,
+    get_real_ioi_backend,
 )
 from .server.circuit_detective_environment import (
     CAUSAL_DELTA_THRESHOLD,
@@ -241,7 +242,7 @@ def build_phase1_dataset(repeats_per_prompt: int = 16, *, scenario: str = "phase
     if scenario == "curriculum":
         system_prompt = CURRICULUM_SYSTEM_PROMPT
         user_prompts = CURRICULUM_USER_PROMPT_VARIANTS
-    elif scenario == "ioi":
+    elif scenario in {"ioi", "real_ioi"}:
         system_prompt = IOI_SYSTEM_PROMPT
         user_prompts = IOI_USER_PROMPT_VARIANTS
     elif scenario == "planted":
@@ -684,7 +685,7 @@ class RealIOICircuitToolEnv(CircuitDetectiveToolEnv):
         backend_factory: Callable[[], CircuitBackend] | None = None,
     ) -> None:
         super().__init__(
-            backend_factory=backend_factory or RealIOITransformerLensBackend,
+            backend_factory=backend_factory or get_real_ioi_backend,
             require_ablation=True,
             causal_delta_threshold=REAL_IOI_CAUSAL_DELTA_THRESHOLD,
         )

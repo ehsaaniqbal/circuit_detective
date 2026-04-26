@@ -1,0 +1,6010 @@
+{
+  "after": {
+    "eval_after_ablate_rate": 1.0,
+    "eval_after_ablate_submitted_rate": 0.98046875,
+    "eval_after_all_candidates_ablated_rate": 1.0,
+    "eval_after_causal_success_rate": 0.9765625,
+    "eval_after_inspect_rate": 1.0,
+    "eval_after_loss": 0.015886608511209488,
+    "eval_after_mean_ablation_faithfulness": 0.5215895017713852,
+    "eval_after_mean_candidate_ablation_coverage": 1.0,
+    "eval_after_mean_f1": 0.9765625,
+    "eval_after_mean_reward": 4.86953125,
+    "eval_after_mean_terminal_reward": 3.8984375,
+    "eval_after_mean_tool_calls": 3.98046875,
+    "eval_after_model_preparation_time": 0.0212,
+    "eval_after_probe_rate": 0.0,
+    "eval_after_reward_counts": {
+      "-0.80": 5,
+      "0.60": 1,
+      "5.00": 250
+    },
+    "eval_after_rollouts": 256.0,
+    "eval_after_runtime": 1772.233,
+    "eval_after_sample_rollouts": [
+      {
+        "ablate_submitted": false,
+        "ablated_candidate_heads": [
+          "L0H2",
+          "L0H5"
+        ],
+        "ablated_heads": [
+          "L0H2",
+          "L0H5"
+        ],
+        "ablation_faithfulness": 0.0,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H2",
+        "best_seen_head": "L0H5",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H2",
+          "L0H5"
+        ],
+        "causal_success": false,
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": -0.8,
+        "rubric": {
+          "causal_validation": 0.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 0.0,
+          "intervention": 1.0,
+          "scalar_reward": -0.8,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": false,
+        "submitted_after_all_candidates": false,
+        "submitted_best_ablated_head": false,
+        "submitted_heads": [],
+        "terminal_ready_no_submit": true,
+        "terminal_reward": 0.0,
+        "tool_calls": 3,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 2,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H4",
+          "L1H4"
+        ],
+        "ablated_heads": [
+          "L0H4",
+          "L1H4"
+        ],
+        "ablation_faithfulness": 0.5325898524570918,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H4",
+        "best_seen_head": "L1H4",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H4",
+          "L1H4"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H4"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 4,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 4,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H4"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H5",
+          "L0H6"
+        ],
+        "ablated_heads": [
+          "L0H5",
+          "L0H6"
+        ],
+        "ablation_faithfulness": 0.5855285680688946,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H6",
+        "best_seen_head": "L0H5",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H5",
+          "L0H6"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H6"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 6,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H6"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H3",
+          "L1H7"
+        ],
+        "ablated_heads": [
+          "L0H3",
+          "L1H7"
+        ],
+        "ablation_faithfulness": 0.5668599666457556,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H7",
+        "best_seen_head": "L0H3",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H3",
+          "L1H7"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H7"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 3,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 7,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H7"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L1H4",
+          "L1H6"
+        ],
+        "ablated_heads": [
+          "L1H4",
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.48905015362586757,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H4",
+        "best_seen_head": "L1H6",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L1H4",
+          "L1H6"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H4"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 6,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 4,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H4"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H0",
+          "L0H4"
+        ],
+        "ablated_heads": [
+          "L0H0",
+          "L0H4"
+        ],
+        "ablation_faithfulness": 0.5283305918063153,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H0",
+        "best_seen_head": "L0H4",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H0",
+          "L0H4"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H0"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 4,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H0"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H3",
+          "L0H5"
+        ],
+        "ablated_heads": [
+          "L0H3",
+          "L0H5"
+        ],
+        "ablation_faithfulness": 0.4209132699734067,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H5",
+        "best_seen_head": "L0H3",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H3",
+          "L0H5"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H5"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 3,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H5"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H4",
+          "L0H7"
+        ],
+        "ablated_heads": [
+          "L0H4",
+          "L0H7"
+        ],
+        "ablation_faithfulness": 0.6380004810927347,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H4",
+        "best_seen_head": "L0H7",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H4",
+          "L0H7"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H4"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 7,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 4,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H4"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L1H5",
+          "L1H7"
+        ],
+        "ablated_heads": [
+          "L1H5",
+          "L1H7"
+        ],
+        "ablation_faithfulness": 0.5521860925670151,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H7",
+        "best_seen_head": "L1H5",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L1H5",
+          "L1H7"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H7"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 7,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H7"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H3",
+          "L1H7"
+        ],
+        "ablated_heads": [
+          "L0H3",
+          "L1H7"
+        ],
+        "ablation_faithfulness": 0.014664417230474788,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H3",
+        "best_seen_head": "L1H7",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H3",
+          "L1H7"
+        ],
+        "causal_success": false,
+        "correct": false,
+        "done": true,
+        "f1": 0.0,
+        "reward": 0.6,
+        "rubric": {
+          "causal_validation": 0.14664417230474786,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 0.0,
+          "intervention": 1.0,
+          "scalar_reward": 0.6,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": false,
+        "submitted_heads": [
+          "L1H7"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": -2.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 7,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 3,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H7"
+              ]
+            },
+            "done": true,
+            "reward": -2.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 0.6
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H3",
+          "L1H3"
+        ],
+        "ablated_heads": [
+          "L0H3",
+          "L1H3"
+        ],
+        "ablation_faithfulness": 0.6194323441689258,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H3",
+        "best_seen_head": "L0H3",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H3",
+          "L1H3"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H3"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 3,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 3,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H3"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H5",
+          "L1H1"
+        ],
+        "ablated_heads": [
+          "L0H5",
+          "L1H1"
+        ],
+        "ablation_faithfulness": 0.5512857697354583,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H5",
+        "best_seen_head": "L1H1",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H5",
+          "L1H1"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H5"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 1,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H5"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H6",
+          "L1H3"
+        ],
+        "ablated_heads": [
+          "L0H6",
+          "L1H3"
+        ],
+        "ablation_faithfulness": 0.5644439157224151,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H6",
+        "best_seen_head": "L1H3",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H6",
+          "L1H3"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H6"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 3,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 6,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H6"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_candidate_heads": [
+          "L0H1",
+          "L1H6"
+        ],
+        "ablated_heads": [
+          "L0H1",
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.0,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H6",
+        "best_seen_head": "L0H1",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H1",
+          "L1H6"
+        ],
+        "causal_success": false,
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": -0.8,
+        "rubric": {
+          "causal_validation": 0.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 0.0,
+          "intervention": 1.0,
+          "scalar_reward": -0.8,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": false,
+        "submitted_after_all_candidates": false,
+        "submitted_best_ablated_head": false,
+        "submitted_heads": [],
+        "terminal_ready_no_submit": true,
+        "terminal_reward": 0.0,
+        "tool_calls": 3,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 1,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 6,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H1",
+          "L0H2"
+        ],
+        "ablated_heads": [
+          "L0H1",
+          "L0H2"
+        ],
+        "ablation_faithfulness": 0.6337534811630062,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H1",
+        "best_seen_head": "L0H2",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H1",
+          "L0H2"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H1"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 2,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 1,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H1"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H4",
+          "L1H7"
+        ],
+        "ablated_heads": [
+          "L0H4",
+          "L1H7"
+        ],
+        "ablation_faithfulness": 0.6154908855746175,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H4",
+        "best_seen_head": "L1H7",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H4",
+          "L1H7"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H4"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 7,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 4,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H4"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H2",
+          "L1H5"
+        ],
+        "ablated_heads": [
+          "L0H2",
+          "L1H5"
+        ],
+        "ablation_faithfulness": 0.635621500459377,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H5",
+        "best_seen_head": "L0H2",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H2",
+          "L1H5"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H5"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 2,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H5"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H0",
+          "L0H5"
+        ],
+        "ablated_heads": [
+          "L0H0",
+          "L0H5"
+        ],
+        "ablation_faithfulness": 0.5416846275382979,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H0",
+        "best_seen_head": "L0H5",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H0",
+          "L0H5"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H0"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H0"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H5",
+          "L1H6"
+        ],
+        "ablated_heads": [
+          "L0H5",
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.542969121150255,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H5",
+        "best_seen_head": "L1H6",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H5",
+          "L1H6"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H5"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 6,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H5"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L1H0",
+          "L1H1"
+        ],
+        "ablated_heads": [
+          "L1H0",
+          "L1H1"
+        ],
+        "ablation_faithfulness": 0.6053037644597395,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H1",
+        "best_seen_head": "L1H0",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L1H0",
+          "L1H1"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H1"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 1,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H1"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H6",
+          "L1H0"
+        ],
+        "ablated_heads": [
+          "L0H6",
+          "L1H0"
+        ],
+        "ablation_faithfulness": 0.5961441532699265,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H6",
+        "best_seen_head": "L1H0",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H6",
+          "L1H0"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H6"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 6,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H6"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H1",
+          "L0H3"
+        ],
+        "ablated_heads": [
+          "L0H1",
+          "L0H3"
+        ],
+        "ablation_faithfulness": 0.6134432255140922,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H1",
+        "best_seen_head": "L0H3",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H1",
+          "L0H3"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H1"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 3,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 1,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H1"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H3",
+          "L1H1"
+        ],
+        "ablated_heads": [
+          "L0H3",
+          "L1H1"
+        ],
+        "ablation_faithfulness": 0.4231181312371506,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H1",
+        "best_seen_head": "L0H3",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H3",
+          "L1H1"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H1"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 3,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 1,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H1"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H0",
+          "L0H4"
+        ],
+        "ablated_heads": [
+          "L0H0",
+          "L0H4"
+        ],
+        "ablation_faithfulness": 0.47318398903480297,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H4",
+        "best_seen_head": "L0H0",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H0",
+          "L0H4"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H4"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 4,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H4"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H4",
+          "L0H6"
+        ],
+        "ablated_heads": [
+          "L0H4",
+          "L0H6"
+        ],
+        "ablation_faithfulness": 0.48470610657434726,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H6",
+        "best_seen_head": "L0H4",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H4",
+          "L0H6"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H6"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 4,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 6,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H6"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H0",
+          "L1H2"
+        ],
+        "ablated_heads": [
+          "L0H0",
+          "L1H2"
+        ],
+        "ablation_faithfulness": 0.560929922979428,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H2",
+        "best_seen_head": "L0H0",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H0",
+          "L1H2"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H2"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 2,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H2"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H1",
+          "L1H0"
+        ],
+        "ablated_heads": [
+          "L0H1",
+          "L1H0"
+        ],
+        "ablation_faithfulness": 0.580624419976743,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H1",
+        "best_seen_head": "L1H0",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H1",
+          "L1H0"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H1"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 1,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H1"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H5",
+          "L1H5"
+        ],
+        "ablated_heads": [
+          "L0H5",
+          "L1H5"
+        ],
+        "ablation_faithfulness": 0.4752249469109261,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H5",
+        "best_seen_head": "L0H5",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H5",
+          "L1H5"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H5"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H5"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L1H3",
+          "L1H4"
+        ],
+        "ablated_heads": [
+          "L1H3",
+          "L1H4"
+        ],
+        "ablation_faithfulness": 0.6269224533675407,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H4",
+        "best_seen_head": "L1H3",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L1H3",
+          "L1H4"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H4"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 3,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 4,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H4"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L1H0",
+          "L1H2"
+        ],
+        "ablated_heads": [
+          "L1H0",
+          "L1H2"
+        ],
+        "ablation_faithfulness": 0.5338300434010613,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H0",
+        "best_seen_head": "L1H2",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L1H0",
+          "L1H2"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H0"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 2,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H0"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H6",
+          "L1H7"
+        ],
+        "ablated_heads": [
+          "L0H6",
+          "L1H7"
+        ],
+        "ablation_faithfulness": 0.5641795824959045,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H7",
+        "best_seen_head": "L0H6",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H6",
+          "L1H7"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H7"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 6,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 7,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H7"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H3",
+          "L0H4"
+        ],
+        "ablated_heads": [
+          "L0H3",
+          "L0H4"
+        ],
+        "ablation_faithfulness": 0.4507583012692071,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H4",
+        "best_seen_head": "L0H3",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H3",
+          "L0H4"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H4"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 3,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 4,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H4"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      }
+    ],
+    "eval_after_samples_per_second": 0.018,
+    "eval_after_steps_per_second": 0.002,
+    "eval_after_submit_rate": 0.98046875,
+    "eval_after_submitted_after_all_candidates_rate": 0.98046875,
+    "eval_after_submitted_best_ablated_head_rate": 0.9765625,
+    "eval_after_success_rate": 0.9765625,
+    "eval_after_terminal_ready_no_submit_rate": 0.01953125,
+    "eval_after_tool_sequence_counts": {
+      "inspect_induction_scores -> ablate_head -> ablate_head": 5,
+      "inspect_induction_scores -> ablate_head -> ablate_head -> submit_circuit": 251
+    }
+  },
+  "before": {
+    "eval_before_ablate_rate": 0.9921875,
+    "eval_before_ablate_submitted_rate": 0.953125,
+    "eval_before_all_candidates_ablated_rate": 0.96875,
+    "eval_before_causal_success_rate": 0.94921875,
+    "eval_before_inspect_rate": 1.0,
+    "eval_before_loss": 0.040653765201568604,
+    "eval_before_mean_ablation_faithfulness": 0.49856871987007073,
+    "eval_before_mean_candidate_ablation_coverage": 0.978515625,
+    "eval_before_mean_f1": 0.9518229166666666,
+    "eval_before_mean_reward": 4.7046875,
+    "eval_before_mean_terminal_reward": 3.783203125,
+    "eval_before_mean_tool_calls": 3.9609375,
+    "eval_before_model_preparation_time": 0.0212,
+    "eval_before_probe_rate": 0.0,
+    "eval_before_reward_counts": {
+      "-0.10": 2,
+      "-0.80": 5,
+      "-1.00": 4,
+      "-1.20": 2,
+      "5.00": 243
+    },
+    "eval_before_rollouts": 256.0,
+    "eval_before_runtime": 1656.6952,
+    "eval_before_sample_rollouts": [
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H0",
+          "L0H2"
+        ],
+        "ablated_heads": [
+          "L0H0",
+          "L0H2"
+        ],
+        "ablation_faithfulness": 0.5157094309130908,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H2",
+        "best_seen_head": "L0H0",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H0",
+          "L0H2"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H2"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 2,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H2"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H0",
+          "L0H1"
+        ],
+        "ablated_heads": [
+          "L0H0",
+          "L0H1"
+        ],
+        "ablation_faithfulness": 0.4621715388162562,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H1",
+        "best_seen_head": "L0H0",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H0",
+          "L0H1"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H1"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 1,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H1"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H1",
+          "L0H2"
+        ],
+        "ablated_heads": [
+          "L0H1",
+          "L0H2"
+        ],
+        "ablation_faithfulness": 0.43249709324839436,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H1",
+        "best_seen_head": "L0H2",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H1",
+          "L0H2"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H1"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 2,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 1,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H1"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L1H0",
+          "L1H3"
+        ],
+        "ablated_heads": [
+          "L1H0",
+          "L1H3"
+        ],
+        "ablation_faithfulness": 0.5795977299833784,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H3",
+        "best_seen_head": "L1H0",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L1H0",
+          "L1H3"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H3"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 3,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H3"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H1",
+          "L0H2"
+        ],
+        "ablated_heads": [
+          "L0H1",
+          "L0H2"
+        ],
+        "ablation_faithfulness": 0.6163769576821756,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H2",
+        "best_seen_head": "L0H1",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H1",
+          "L0H2"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H2"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 1,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 2,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H2"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H5",
+          "L1H3"
+        ],
+        "ablated_heads": [
+          "L0H5",
+          "L1H3"
+        ],
+        "ablation_faithfulness": 0.4660748467199042,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H5",
+        "best_seen_head": "L1H3",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H5",
+          "L1H3"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H5"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 3,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H5"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H0",
+          "L1H3"
+        ],
+        "ablated_heads": [
+          "L0H0",
+          "L1H3"
+        ],
+        "ablation_faithfulness": 0.5278412036860115,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H3",
+        "best_seen_head": "L0H0",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H0",
+          "L1H3"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H3"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 3,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H3"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L1H1",
+          "L1H5"
+        ],
+        "ablated_heads": [
+          "L1H1",
+          "L1H5"
+        ],
+        "ablation_faithfulness": 0.48866703541320955,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H5",
+        "best_seen_head": "L1H1",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L1H1",
+          "L1H5"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H5"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 1,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H5"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H7",
+          "L1H0"
+        ],
+        "ablated_heads": [
+          "L0H7",
+          "L1H0"
+        ],
+        "ablation_faithfulness": 0.542488222685329,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H7",
+        "best_seen_head": "L1H0",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H7",
+          "L1H0"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H7"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 7,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H7"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H7",
+          "L1H7"
+        ],
+        "ablated_heads": [
+          "L0H7",
+          "L1H7"
+        ],
+        "ablation_faithfulness": 0.5488396552771053,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H7",
+        "best_seen_head": "L0H7",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H7",
+          "L1H7"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H7"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 7,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 7,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H7"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H1",
+          "L0H2"
+        ],
+        "ablated_heads": [
+          "L0H1",
+          "L0H2"
+        ],
+        "ablation_faithfulness": 0.4268299056285632,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H1",
+        "best_seen_head": "L0H2",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H1",
+          "L0H2"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H1"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 2,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 1,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H1"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H1",
+          "L1H5"
+        ],
+        "ablated_heads": [
+          "L0H1",
+          "L1H5"
+        ],
+        "ablation_faithfulness": 0.539353552959803,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H1",
+        "best_seen_head": "L1H5",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H1",
+          "L1H5"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H1"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 1,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H1"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L1H0",
+          "L1H2"
+        ],
+        "ablated_heads": [
+          "L1H0",
+          "L1H2"
+        ],
+        "ablation_faithfulness": 0.48522334027739045,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H0",
+        "best_seen_head": "L1H2",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L1H0",
+          "L1H2"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H0"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 2,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H0"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_candidate_heads": [],
+        "ablated_heads": [],
+        "ablation_faithfulness": 0.0,
+        "all_candidates_ablated": false,
+        "best_ablated_head": "",
+        "best_seen_head": "L0H1",
+        "candidate_ablation_coverage": 0.0,
+        "candidate_heads": [
+          "L0H1",
+          "L1H1"
+        ],
+        "causal_success": false,
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": -1.2,
+        "rubric": {
+          "causal_validation": 0.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 0.0,
+          "intervention": 0.0,
+          "scalar_reward": -1.2,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": false,
+        "submitted_after_all_candidates": false,
+        "submitted_best_ablated_head": false,
+        "submitted_heads": [],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 0.0,
+        "tool_calls": 1,
+        "tool_sequence": [
+          "inspect_induction_scores"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          }
+        ],
+        "used_ablate": false,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L1H0",
+          "L1H1"
+        ],
+        "ablated_heads": [
+          "L1H0",
+          "L1H1"
+        ],
+        "ablation_faithfulness": 0.6324214889565235,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H0",
+        "best_seen_head": "L1H1",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L1H0",
+          "L1H1"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H0"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 1,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H0"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H6",
+          "L1H0"
+        ],
+        "ablated_heads": [
+          "L0H6",
+          "L1H0"
+        ],
+        "ablation_faithfulness": 0.45591171719668516,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H6",
+        "best_seen_head": "L1H0",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H6",
+          "L1H0"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H6"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 6,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H6"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H2",
+          "L1H2"
+        ],
+        "ablated_heads": [
+          "L0H2",
+          "L1H2"
+        ],
+        "ablation_faithfulness": 0.612923383973734,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H2",
+        "best_seen_head": "L0H2",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H2",
+          "L1H2"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H2"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 2,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 2,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H2"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H6",
+          "L1H3"
+        ],
+        "ablated_heads": [
+          "L0H6",
+          "L1H3"
+        ],
+        "ablation_faithfulness": 0.4500713471213055,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H6",
+        "best_seen_head": "L1H3",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H6",
+          "L1H3"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H6"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 3,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 6,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H6"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_candidate_heads": [
+          "L0H2"
+        ],
+        "ablated_heads": [
+          "L0H2"
+        ],
+        "ablation_faithfulness": 0.0,
+        "all_candidates_ablated": false,
+        "best_ablated_head": "L0H2",
+        "best_seen_head": "L0H2",
+        "candidate_ablation_coverage": 0.5,
+        "candidate_heads": [
+          "L0H2",
+          "L1H0"
+        ],
+        "causal_success": false,
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": -1.0,
+        "rubric": {
+          "causal_validation": 0.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 0.0,
+          "intervention": 1.0,
+          "scalar_reward": -1.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": false,
+        "submitted_after_all_candidates": false,
+        "submitted_best_ablated_head": false,
+        "submitted_heads": [],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 0.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "ablate_head"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": "L0H2",
+              "layer": 0
+            },
+            "done": false,
+            "reward": -0.05,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": -0.05
+          },
+          {
+            "arguments": {
+              "head": "L0H2",
+              "layer": 0
+            },
+            "done": false,
+            "reward": -0.05,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": -0.05
+          },
+          {
+            "arguments": {
+              "head": 2,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H7",
+          "L1H6"
+        ],
+        "ablated_heads": [
+          "L0H7",
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.42934980377657633,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H7",
+        "best_seen_head": "L1H6",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H7",
+          "L1H6"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H7"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 6,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 7,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H7"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": false,
+        "ablated_candidate_heads": [
+          "L1H5",
+          "L1H6"
+        ],
+        "ablated_heads": [
+          "L1H5",
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.0,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H6",
+        "best_seen_head": "L1H5",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L1H5",
+          "L1H6"
+        ],
+        "causal_success": false,
+        "correct": false,
+        "done": false,
+        "f1": 0.0,
+        "reward": -0.8,
+        "rubric": {
+          "causal_validation": 0.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 0.0,
+          "intervention": 1.0,
+          "scalar_reward": -0.8,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": false,
+        "submitted_after_all_candidates": false,
+        "submitted_best_ablated_head": false,
+        "submitted_heads": [],
+        "terminal_ready_no_submit": true,
+        "terminal_reward": 0.0,
+        "tool_calls": 3,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 6,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H7",
+          "L1H7"
+        ],
+        "ablated_heads": [
+          "L0H7",
+          "L1H7"
+        ],
+        "ablation_faithfulness": 0.5503981206597215,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H7",
+        "best_seen_head": "L0H7",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H7",
+          "L1H7"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H7"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 7,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 7,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H7"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H0",
+          "L1H5"
+        ],
+        "ablated_heads": [
+          "L0H0",
+          "L1H5"
+        ],
+        "ablation_faithfulness": 0.5396097096792645,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H5",
+        "best_seen_head": "L0H0",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H0",
+          "L1H5"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H5"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H5"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H0",
+          "L0H5"
+        ],
+        "ablated_heads": [
+          "L0H0",
+          "L0H5"
+        ],
+        "ablation_faithfulness": 0.624813471722885,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H5",
+        "best_seen_head": "L0H0",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H0",
+          "L0H5"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H5"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H5"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H0",
+          "L1H5"
+        ],
+        "ablated_heads": [
+          "L0H0",
+          "L1H5"
+        ],
+        "ablation_faithfulness": 0.5725967131371776,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H0",
+        "best_seen_head": "L1H5",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H0",
+          "L1H5"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H0"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 0,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H0"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H1",
+          "L1H7"
+        ],
+        "ablated_heads": [
+          "L0H1",
+          "L1H7"
+        ],
+        "ablation_faithfulness": 0.5034710260767961,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H1",
+        "best_seen_head": "L1H7",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H1",
+          "L1H7"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H1"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 7,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 1,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H1"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L1H4",
+          "L1H6"
+        ],
+        "ablated_heads": [
+          "L1H4",
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.6231481098340825,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H4",
+        "best_seen_head": "L1H6",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L1H4",
+          "L1H6"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H4"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 6,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 4,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H4"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L1H3",
+          "L1H6"
+        ],
+        "ablated_heads": [
+          "L1H3",
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.510169201892677,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H3",
+        "best_seen_head": "L1H6",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L1H3",
+          "L1H6"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H3"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 6,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 3,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H3"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H2",
+          "L0H5"
+        ],
+        "ablated_heads": [
+          "L0H2",
+          "L0H5"
+        ],
+        "ablation_faithfulness": 0.48956475871283234,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H2",
+        "best_seen_head": "L0H5",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H2",
+          "L0H5"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H2"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 2,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H2"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H6",
+          "L1H6"
+        ],
+        "ablated_heads": [
+          "L0H6",
+          "L1H6"
+        ],
+        "ablation_faithfulness": 0.5534499784613132,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L1H6",
+        "best_seen_head": "L0H6",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H6",
+          "L1H6"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L1H6"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 6,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 6,
+              "layer": 1
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L1H6"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H3",
+          "L0H5"
+        ],
+        "ablated_heads": [
+          "L0H3",
+          "L0H5"
+        ],
+        "ablation_faithfulness": 0.44641561113821365,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H3",
+        "best_seen_head": "L0H5",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H3",
+          "L0H5"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H3"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 5,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 3,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H3"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      },
+      {
+        "ablate_submitted": true,
+        "ablated_candidate_heads": [
+          "L0H1",
+          "L0H7"
+        ],
+        "ablated_heads": [
+          "L0H1",
+          "L0H7"
+        ],
+        "ablation_faithfulness": 0.5420474267256675,
+        "all_candidates_ablated": true,
+        "best_ablated_head": "L0H1",
+        "best_seen_head": "L0H7",
+        "candidate_ablation_coverage": 1.0,
+        "candidate_heads": [
+          "L0H1",
+          "L0H7"
+        ],
+        "causal_success": true,
+        "correct": true,
+        "done": true,
+        "f1": 1.0,
+        "reward": 5.0,
+        "rubric": {
+          "causal_validation": 1.0,
+          "evidence_gathering": 1.0,
+          "final_answer_f1": 1.0,
+          "intervention": 1.0,
+          "scalar_reward": 5.0,
+          "tool_format": 1.0
+        },
+        "scenario_id": "planted_lite_causal_chain",
+        "submitted": true,
+        "submitted_after_all_candidates": true,
+        "submitted_best_ablated_head": true,
+        "submitted_heads": [
+          "L0H1"
+        ],
+        "terminal_ready_no_submit": false,
+        "terminal_reward": 4.0,
+        "tool_calls": 4,
+        "tool_sequence": [
+          "inspect_induction_scores",
+          "ablate_head",
+          "ablate_head",
+          "submit_circuit"
+        ],
+        "tool_trace": [
+          {
+            "arguments": {
+              "top_k": 2
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "inspect_induction_scores",
+            "trainer_step_reward": 0.02
+          },
+          {
+            "arguments": {
+              "head": 7,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.25
+          },
+          {
+            "arguments": {
+              "head": 1,
+              "layer": 0
+            },
+            "done": false,
+            "reward": 0.01,
+            "tool_name": "ablate_head",
+            "trainer_step_reward": 0.8
+          },
+          {
+            "arguments": {
+              "heads": [
+                "L0H1"
+              ]
+            },
+            "done": true,
+            "reward": 4.0,
+            "tool_name": "submit_circuit",
+            "trainer_step_reward": 5.0
+          }
+        ],
+        "used_ablate": true,
+        "used_inspect": true,
+        "used_probe": false
+      }
+    ],
+    "eval_before_samples_per_second": 0.019,
+    "eval_before_steps_per_second": 0.002,
+    "eval_before_submit_rate": 0.95703125,
+    "eval_before_submitted_after_all_candidates_rate": 0.94921875,
+    "eval_before_submitted_best_ablated_head_rate": 0.953125,
+    "eval_before_success_rate": 0.94921875,
+    "eval_before_terminal_ready_no_submit_rate": 0.01953125,
+    "eval_before_tool_sequence_counts": {
+      "inspect_induction_scores": 2,
+      "inspect_induction_scores -> ablate_head -> ablate_head": 5,
+      "inspect_induction_scores -> ablate_head -> ablate_head -> ablate_head": 1,
+      "inspect_induction_scores -> ablate_head -> ablate_head -> ablate_head -> ablate_head": 1,
+      "inspect_induction_scores -> ablate_head -> ablate_head -> list_tools -> submit_circuit": 1,
+      "inspect_induction_scores -> ablate_head -> ablate_head -> submit_circuit": 241,
+      "inspect_induction_scores -> ablate_head -> submit_circuit": 1,
+      "inspect_induction_scores -> list_tools -> ablate_head -> ablate_head -> submit_circuit": 2,
+      "list_tools -> inspect_induction_scores -> ablate_head": 2
+    }
+  }
+}

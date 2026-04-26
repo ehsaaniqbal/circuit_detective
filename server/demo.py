@@ -739,6 +739,56 @@ DEMO_HTML = r"""<!doctype html>
       font-size: 12px;
       font-weight: 600;
     }
+    .term {
+      position: relative;
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: underline dotted;
+      text-decoration-thickness: 1.5px;
+      text-underline-offset: 4px;
+      cursor: help;
+      outline: none;
+    }
+    .term:hover, .term:focus { color: #084d44; }
+    .term::after {
+      content: attr(data-tip);
+      position: absolute;
+      left: 0;
+      bottom: calc(100% + 9px);
+      width: min(300px, 74vw);
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--mono-bg);
+      color: #f6f3ea;
+      box-shadow: 0 14px 34px rgba(17, 24, 22, .22);
+      font-family: "IBM Plex Sans", "Helvetica Neue", sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.35;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(4px);
+      transition: opacity .14s ease, transform .14s ease;
+      z-index: 20;
+    }
+    .term:hover::after, .term:focus::after {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .glossary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .glossary-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fbfaf6;
+      padding: 15px;
+    }
+    .glossary-card strong { display: block; margin-bottom: 6px; }
+    .glossary-card span { color: var(--muted); line-height: 1.42; }
     .future-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -758,7 +808,7 @@ DEMO_HTML = r"""<!doctype html>
       to { opacity: 1; transform: translateY(0); }
     }
     @media (max-width: 980px) {
-      .interactive-grid, .chapter-grid, .workflow, .future-grid { grid-template-columns: 1fr; }
+      .interactive-grid, .chapter-grid, .workflow, .future-grid, .glossary-grid { grid-template-columns: 1fr; }
       .plain-definition { grid-template-columns: 1fr; }
       .stack-row { grid-template-columns: 1fr; }
     }
@@ -769,8 +819,11 @@ DEMO_HTML = r"""<!doctype html>
     <div class="eyebrow">Circuit Detective · OpenEnv RL Environment</div>
     <h1>Can we train a model to investigate another model?</h1>
     <p class="lede">
-      Mechanistic interpretability is the difference between seeing a model fail and knowing
-      which internal circuit caused it. Circuit Detective turns that workflow into an RL task:
+      <a class="term" href="#glossary" data-tip="A research field that tries to explain model behavior by identifying the internal computations that caused it.">Mechanistic interpretability</a>
+      is the difference between seeing a model fail and knowing which internal
+      <a class="term" href="#glossary" data-tip="A small set of model components that together implement a behavior.">circuit</a>
+      caused it. Circuit Detective turns that workflow into an
+      <a class="term" href="#glossary" data-tip="A training setup where an agent improves by taking actions and receiving rewards.">RL task</a>:
       inspect, intervene, and only then submit a hypothesis.
     </p>
     <div class="hero-actions">
@@ -787,12 +840,15 @@ DEMO_HTML = r"""<!doctype html>
         <div class="chapter-kicker">Why this exists</div>
         <h2>Interpretability is an experiment, not a vibe check.</h2>
         <p>
-          A high activation score can be useful, but it is not proof. The core skill is causal:
+          A high
+          <a class="term" href="#glossary" data-tip="A number saying a component looks related to the behavior. Useful for search; not proof of cause.">activation score</a>
+          can be useful, but it is not proof. The core skill is
+          <a class="term" href="#glossary" data-tip="Causal evidence comes from changing something and observing whether behavior changes.">causal</a>:
           change one internal component, measure what happens, and update the hypothesis.
           That is exactly the habit this environment rewards.
         </p>
         <div class="stack">
-          <div class="stack-row"><strong>Human workflow</strong><span>Inspect activations, pick a hypothesis, run interventions, document evidence.</span></div>
+          <div class="stack-row"><strong>Human workflow</strong><span>Inspect activations, pick a hypothesis, run <a class="term" href="#glossary" data-tip="An experiment where you change or disable a model component and measure the behavioral effect.">interventions</a>, document evidence.</span></div>
           <div class="stack-row"><strong>RL workflow</strong><span>Expose the same moves as tools, then reward evidence-seeking behavior.</span></div>
         </div>
       </div>
@@ -809,7 +865,11 @@ DEMO_HTML = r"""<!doctype html>
           <div class="node">L1H7</div>
         </div>
         <div class="diagram-caption">
-          The decoy looks suspicious by correlation. The causal head is the one whose removal changes behavior.
+          The
+          <a class="term" href="#glossary" data-tip="A component that looks important by correlation but does not cause the behavior.">decoy</a>
+          looks suspicious by correlation. The
+          <a class="term" href="#glossary" data-tip="An attention head whose removal changes the behavior being tested.">causal head</a>
+          is the one whose removal changes behavior.
         </div>
       </div>
     </section>
@@ -823,7 +883,7 @@ DEMO_HTML = r"""<!doctype html>
       </p>
       <div class="workflow">
         <div class="workflow-step"><strong>1. Inspect</strong><span>Find candidate internal parts. This creates suspects, not answers.</span></div>
-        <div class="workflow-step"><strong>2. Intervene</strong><span>Turn candidates off and measure the behavioral effect.</span></div>
+        <div class="workflow-step"><strong>2. Intervene</strong><span>Turn candidates off with <a class="term" href="#glossary" data-tip="Ablation means disabling one component and checking whether the model behavior changes.">ablation</a> and measure the behavioral effect.</span></div>
         <div class="workflow-step"><strong>3. Compare</strong><span>Separate a correlated decoy from a causal component.</span></div>
         <div class="workflow-step"><strong>4. Submit</strong><span>Commit only after evidence supports the circuit.</span></div>
       </div>
@@ -879,12 +939,31 @@ DEMO_HTML = r"""<!doctype html>
       <p>
         Circuit Detective is not claiming that this toy environment solves interpretability.
         It is a testbed for the behavior we need: agents that propose hypotheses, run interventions,
-        and produce auditable evidence about other models.
+        and produce
+        <a class="term" href="#glossary" data-tip="Evidence a human can inspect: tool calls, observations, scores, and final reward.">auditable evidence</a>
+        about other models.
       </p>
       <div class="future-grid">
         <div class="future-card"><strong>Near term</strong><span>Harder toy circuits, noisier tools, longer evidence chains.</span></div>
         <div class="future-card"><strong>Medium term</strong><span>Agents that investigate real benchmark behaviors instead of memorizing labels.</span></div>
         <div class="future-card"><strong>Long term</strong><span>Continuous model audits for failures, jailbreak pathways, memorization, and backdoors.</span></div>
+      </div>
+    </section>
+
+    <section class="chapter" id="glossary">
+      <div class="chapter-kicker">Hover or click glossary</div>
+      <h2>Plain-English terms.</h2>
+      <p>
+        The dotted terms above are meant to keep the demo readable for non-interp judges.
+        Hover for the short version; this section gives the same definitions in one place.
+      </p>
+      <div class="glossary-grid">
+        <div class="glossary-card"><strong>Mechanistic interpretability</strong><span>Explaining model behavior by finding the internal computations that caused it.</span></div>
+        <div class="glossary-card"><strong>Circuit</strong><span>A small set of model components that together implement a behavior.</span></div>
+        <div class="glossary-card"><strong>Attention head</strong><span>A transformer component that moves information between token positions.</span></div>
+        <div class="glossary-card"><strong>Ablation</strong><span>Disable one component and measure whether behavior changes.</span></div>
+        <div class="glossary-card"><strong>Decoy</strong><span>A component that looks correlated with the behavior but is not the cause.</span></div>
+        <div class="glossary-card"><strong>Causal evidence</strong><span>Evidence from intervention, not just from correlation.</span></div>
       </div>
     </section>
   </main>

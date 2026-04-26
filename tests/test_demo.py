@@ -11,7 +11,8 @@ def test_demo_root_serves_judge_ui() -> None:
     response = client.get("/")
 
     assert response.status_code == 200
-    assert "A model can guess. A detective tests." in response.text
+    assert "Can we train a model to investigate another model?" in response.text
+    assert "Interpretability is an experiment, not a vibe check." in response.text
     assert "Run causal agent" in response.text
     assert "Run naive baseline" in response.text
 

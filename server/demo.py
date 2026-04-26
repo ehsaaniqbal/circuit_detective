@@ -363,7 +363,7 @@ DEMO_HTML = r"""<!doctype html>
     }
 
     header, main { width: min(1120px, calc(100vw - 32px)); margin: 0 auto; }
-    header { padding: 42px 0 18px; }
+    header { padding: 54px 0 18px; }
     .eyebrow {
       font-family: "IBM Plex Mono", monospace;
       font-size: 12px;
@@ -377,7 +377,7 @@ DEMO_HTML = r"""<!doctype html>
       line-height: .96;
       letter-spacing: -0.07em;
       margin: 12px 0 16px;
-      max-width: 820px;
+      max-width: 880px;
     }
     .lede {
       max-width: 780px;
@@ -407,7 +407,128 @@ DEMO_HTML = r"""<!doctype html>
       gap: 10px;
       margin-top: 20px;
     }
-    .grid {
+    main { padding: 16px 0 42px; }
+    .chapter {
+      background: rgba(255, 255, 255, .86);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      padding: clamp(20px, 4vw, 34px);
+      margin: 16px 0;
+      overflow: hidden;
+    }
+    .chapter-grid {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 24px;
+      align-items: center;
+    }
+    .chapter h2 {
+      margin: 0 0 12px;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1;
+      letter-spacing: -0.06em;
+    }
+    .chapter p {
+      margin: 0;
+      color: #38403b;
+      font-size: 17px;
+      line-height: 1.55;
+      max-width: 720px;
+    }
+    .chapter-kicker {
+      font-family: "IBM Plex Mono", monospace;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .stack {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .stack-row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 12px;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+      color: var(--muted);
+    }
+    .stack-row strong { color: var(--ink); }
+    .diagram {
+      position: relative;
+      min-height: 280px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 20% 25%, rgba(13, 107, 95, .14), transparent 7rem),
+        radial-gradient(circle at 74% 68%, rgba(157, 74, 34, .14), transparent 8rem),
+        #fbfaf6;
+      padding: 22px;
+    }
+    .diagram-title {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 20px;
+    }
+    .node-map {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .node {
+      height: 54px;
+      border-radius: 999px;
+      border: 1px solid #cfd8d3;
+      background: white;
+      display: grid;
+      place-items: center;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 8px 20px rgba(28, 31, 29, .05);
+    }
+    .node.decoy { color: var(--warn); background: var(--warn-soft); border-color: #d8b999; }
+    .node.cause { color: var(--good); background: #e0f1e6; border-color: #bdddc9; }
+    .diagram-caption {
+      position: absolute;
+      left: 22px;
+      right: 22px;
+      bottom: 18px;
+      color: var(--muted);
+      line-height: 1.4;
+      font-size: 14px;
+    }
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .workflow-step {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      background: #fbfaf6;
+    }
+    .workflow-step strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+    .workflow-step span {
+      color: var(--muted);
+      line-height: 1.42;
+      font-size: 14px;
+    }
+    .interactive-grid {
       display: grid;
       grid-template-columns: .95fr 1.35fr;
       gap: 16px;
@@ -483,6 +604,35 @@ DEMO_HTML = r"""<!doctype html>
     table { width: 100%; border-collapse: collapse; font-family: "IBM Plex Mono", monospace; font-size: 13px; }
     th { text-align: left; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
     td, th { padding: 10px 6px; border-bottom: 1px solid var(--line); }
+    .evidence-bars {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 62px 1fr 54px;
+      gap: 10px;
+      align-items: center;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+    }
+    .bar-row span:last-child { text-align: right; color: var(--muted); }
+    .bar-track {
+      height: 10px;
+      border-radius: 999px;
+      background: #eef0ec;
+      overflow: hidden;
+      border: 1px solid #e0e4de;
+    }
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: var(--warn);
+      transition: width .3s ease;
+    }
+    .bar-fill.effect { background: var(--accent); }
     .chip {
       display: inline-flex;
       align-items: center;
@@ -589,51 +739,100 @@ DEMO_HTML = r"""<!doctype html>
       font-size: 12px;
       font-weight: 600;
     }
+    .future-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .future-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fbfaf6;
+      padding: 15px;
+    }
+    .future-card strong { display: block; margin-bottom: 6px; }
+    .future-card span { color: var(--muted); line-height: 1.42; }
     @keyframes rise {
       from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
     @media (max-width: 980px) {
-      .grid { grid-template-columns: 1fr; }
+      .interactive-grid, .chapter-grid, .workflow, .future-grid { grid-template-columns: 1fr; }
       .plain-definition { grid-template-columns: 1fr; }
+      .stack-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <header>
     <div class="eyebrow">Circuit Detective · OpenEnv RL Environment</div>
-    <h1>A model can guess. A detective tests.</h1>
+    <h1>Can we train a model to investigate another model?</h1>
     <p class="lede">
-      A language model has many tiny parts inside it. One part looks suspicious from logs,
-      but another part actually causes the behavior. The task is to learn the scientific move:
-      do not trust the ranking; run an intervention.
+      Mechanistic interpretability is the difference between seeing a model fail and knowing
+      which internal circuit caused it. Circuit Detective turns that workflow into an RL task:
+      inspect, intervene, and only then submit a hypothesis.
     </p>
-    <div class="plain-definition">
-      <div class="definition-card">
-        <strong>Suspicion</strong>
-        <span>An inspection score says which internal part looks most related.</span>
-      </div>
-      <div class="definition-card">
-        <strong>Intervention</strong>
-        <span>Turn a part off and measure whether the model behavior changes.</span>
-      </div>
-      <div class="definition-card">
-        <strong>Circuit</strong>
-        <span>The part that changes behavior is the cause. Submit that, not the decoy.</span>
-      </div>
-    </div>
     <div class="hero-actions">
+      <button class="primary" onclick="document.getElementById('case').scrollIntoView({ behavior: 'smooth' })">Start the case</button>
       <button class="warn" onclick="runBaseline()">Run naive baseline</button>
-      <button class="primary" onclick="runProtocol()">Run causal agent</button>
-      <button onclick="resetCase()">Try manually</button>
+      <button onclick="runProtocol()">Run causal agent</button>
       <a class="small-link" href="/web/">OpenEnv tool UI</a>
     </div>
   </header>
 
-  <main class="grid">
+  <main>
+    <section class="chapter chapter-grid">
+      <div>
+        <div class="chapter-kicker">Why this exists</div>
+        <h2>Interpretability is an experiment, not a vibe check.</h2>
+        <p>
+          A high activation score can be useful, but it is not proof. The core skill is causal:
+          change one internal component, measure what happens, and update the hypothesis.
+          That is exactly the habit this environment rewards.
+        </p>
+        <div class="stack">
+          <div class="stack-row"><strong>Human workflow</strong><span>Inspect activations, pick a hypothesis, run interventions, document evidence.</span></div>
+          <div class="stack-row"><strong>RL workflow</strong><span>Expose the same moves as tools, then reward evidence-seeking behavior.</span></div>
+        </div>
+      </div>
+      <div class="diagram" aria-label="toy circuit visualization">
+        <div class="diagram-title">Toy transformer case</div>
+        <div class="node-map">
+          <div class="node">L0H2</div>
+          <div class="node decoy">L0H7</div>
+          <div class="node">L1H1</div>
+          <div class="node">L1H4</div>
+          <div class="node">L0H3</div>
+          <div class="node cause">L0H6</div>
+          <div class="node">L1H5</div>
+          <div class="node">L1H7</div>
+        </div>
+        <div class="diagram-caption">
+          The decoy looks suspicious by correlation. The causal head is the one whose removal changes behavior.
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="chapter-kicker">What the agent must learn</div>
+      <h2>Do not answer first. Run the test first.</h2>
+      <p>
+        The current task is intentionally small. That is the point. If an RL agent cannot learn
+        this basic scientific loop on a controlled circuit, it will not survive harder interp work.
+      </p>
+      <div class="workflow">
+        <div class="workflow-step"><strong>1. Inspect</strong><span>Find candidate internal parts. This creates suspects, not answers.</span></div>
+        <div class="workflow-step"><strong>2. Intervene</strong><span>Turn candidates off and measure the behavioral effect.</span></div>
+        <div class="workflow-step"><strong>3. Compare</strong><span>Separate a correlated decoy from a causal component.</span></div>
+        <div class="workflow-step"><strong>4. Submit</strong><span>Commit only after evidence supports the circuit.</span></div>
+      </div>
+    </section>
+
+    <section class="interactive-grid" id="case">
     <section class="panel">
       <div class="panel-head">
-        <h2>The Case</h2>
+        <h2>The Case: one tempting decoy</h2>
       </div>
       <div class="panel-body">
         <div class="story" id="story"></div>
@@ -641,6 +840,7 @@ DEMO_HTML = r"""<!doctype html>
           <thead><tr><th>Internal part</th><th>Looks suspicious</th><th>Effect when removed</th></tr></thead>
           <tbody id="candidates"></tbody>
         </table>
+        <div class="evidence-bars" id="evidence-bars"></div>
         <p class="note" id="next-hint">Reset the case to begin.</p>
         <div class="controls" id="candidate-actions"></div>
       </div>
@@ -670,6 +870,23 @@ DEMO_HTML = r"""<!doctype html>
         <div class="panel-body" id="results"></div>
       </section>
     </aside>
+
+    </section>
+
+    <section class="chapter">
+      <div class="chapter-kicker">If this scales</div>
+      <h2>The long game is model debugging agents.</h2>
+      <p>
+        Circuit Detective is not claiming that this toy environment solves interpretability.
+        It is a testbed for the behavior we need: agents that propose hypotheses, run interventions,
+        and produce auditable evidence about other models.
+      </p>
+      <div class="future-grid">
+        <div class="future-card"><strong>Near term</strong><span>Harder toy circuits, noisier tools, longer evidence chains.</span></div>
+        <div class="future-card"><strong>Medium term</strong><span>Agents that investigate real benchmark behaviors instead of memorizing labels.</span></div>
+        <div class="future-card"><strong>Long term</strong><span>Continuous model audits for failures, jailbreak pathways, memorization, and backdoors.</span></div>
+      </div>
+    </section>
   </main>
 
   <script>
@@ -765,6 +982,7 @@ DEMO_HTML = r"""<!doctype html>
     function render() {
       if (!state) return;
       renderStory();
+      renderEvidenceBars();
       document.getElementById("next-hint").innerHTML =
         state.done
           ? `<span class="chip ${state.rubric.causal_success ? "good" : "bad"}">${state.rubric.causal_success ? "The agent found the cause." : "The agent guessed the decoy."}</span>`
@@ -826,13 +1044,46 @@ DEMO_HTML = r"""<!doctype html>
       const hasDelta = state.candidates.some(row => row.behavior_delta !== null);
       const isDone = state.done;
       const steps = [
-        ["1", "Find suspects", hasScores ? "Two internal parts were ranked by suspicious-looking correlation." : "Ask the environment which internal parts look related."],
-        ["2", "Test the suspects", hasDelta ? "At least one part was turned off and measured." : "Turn each part off. A causal part changes behavior; a decoy does not."],
-        ["3", "Submit the cause", isDone ? "The answer has been submitted and scored." : "Submit the part with the strongest measured effect, not the prettiest score."]
+        ["1", "Find suspects", hasScores ? "The environment surfaced two candidate heads. One has the prettier score." : "Ask which internal parts look related to the behavior."],
+        ["2", "Run interventions", hasDelta ? "The agent has started turning candidates off and measuring the effect." : "Turn each candidate off. Causal parts move behavior; decoys do not."],
+        ["3", "Commit to evidence", isDone ? "The answer has been submitted and scored." : "Submit the part with the strongest measured effect, not the prettiest score."]
       ];
       document.getElementById("story").innerHTML = steps.map(([n, title, text]) => `
         <div class="story-step"><b>${n}</b><div><strong>${title}</strong><span>${text}</span></div></div>
       `).join("");
+    }
+
+    function renderEvidenceBars() {
+      const rows = [];
+      for (const candidate of state.candidates) {
+        if (candidate.score !== null) {
+          rows.push({
+            head: candidate.head_id,
+            label: "suspicion",
+            value: Number(candidate.score || 0),
+            kind: "score"
+          });
+        }
+        if (candidate.behavior_delta !== null) {
+          rows.push({
+            head: candidate.head_id,
+            label: "effect",
+            value: Number(candidate.behavior_delta || 0),
+            kind: "effect"
+          });
+        }
+      }
+      document.getElementById("evidence-bars").innerHTML = rows.length
+        ? rows.map(row => `
+            <div class="bar-row">
+              <strong>${row.head}</strong>
+              <div class="bar-track" title="${row.label}">
+                <div class="bar-fill ${row.kind === "effect" ? "effect" : ""}" style="width:${Math.max(3, Math.min(100, row.value * 100))}%"></div>
+              </div>
+              <span>${row.label}</span>
+            </div>
+          `).join("")
+        : `<p class="note">The visual will separate suspicious-looking scores from measured causal effects.</p>`;
     }
 
     function humanNextTool(tool) {
@@ -853,12 +1104,12 @@ DEMO_HTML = r"""<!doctype html>
     function plainEvent(event) {
       const result = event.result || {};
       if (event.tool_name === "reset") {
-        return "The environment creates a controlled case with two plausible internal parts. One is a decoy; one is causal.";
+        return "A controlled case is created. Two internal parts are plausible. One is a decoy; one is causal.";
       }
       if (event.tool_name === "inspect_induction_scores") {
         const scores = result.scores || [];
         if (scores.length >= 2) {
-          return `${scores[0].head_id} looks most suspicious by correlation. That is exactly the trap: high score does not prove causality.`;
+          return `${scores[0].head_id} looks most suspicious. That is the trap: correlation is useful for search, but it is not evidence of cause.`;
         }
         return "The agent asked for suspicious internal parts.";
       }
@@ -870,8 +1121,8 @@ DEMO_HTML = r"""<!doctype html>
       if (event.tool_name === "submit_circuit") {
         const heads = (result.submitted_heads || []).join(", ");
         return state.rubric.causal_success
-          ? `The agent submitted ${heads}. It used intervention evidence and found the true cause.`
-          : `The agent submitted ${heads}. This is the failure mode: guessing from correlation instead of testing causality.`;
+          ? `The agent submitted ${heads}. It used the intervention result, not the first ranking.`
+          : `The agent submitted ${heads}. This is the baseline failure: it guessed from correlation.`;
       }
       return event.summary || "";
     }

@@ -415,7 +415,7 @@ DEMO_HTML = r"""<!doctype html>
       box-shadow: var(--shadow);
       padding: clamp(20px, 4vw, 34px);
       margin: 16px 0;
-      overflow: hidden;
+      overflow: visible;
     }
     .chapter-grid {
       display: grid;
@@ -498,6 +498,14 @@ DEMO_HTML = r"""<!doctype html>
     }
     .node.decoy { color: var(--warn); background: var(--warn-soft); border-color: #d8b999; }
     .node.cause { color: var(--good); background: #e0f1e6; border-color: #bdddc9; }
+    .node.active-decoy {
+      animation: pulseDecoy 1.2s ease-in-out infinite;
+      box-shadow: 0 0 0 8px rgba(157, 74, 34, .12), 0 12px 26px rgba(157, 74, 34, .18);
+    }
+    .node.active-cause {
+      animation: pulseCause 1.2s ease-in-out infinite;
+      box-shadow: 0 0 0 8px rgba(20, 115, 63, .12), 0 12px 26px rgba(20, 115, 63, .18);
+    }
     .diagram-caption {
       position: absolute;
       left: 22px;
@@ -527,6 +535,97 @@ DEMO_HTML = r"""<!doctype html>
       color: var(--muted);
       line-height: 1.42;
       font-size: 14px;
+    }
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .compare-card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: #fbfaf6;
+      overflow: hidden;
+    }
+    .compare-card.fail { border-color: #e2c7b4; }
+    .compare-card.success { border-color: #bfdccb; }
+    .compare-head {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+    .compare-head h3 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: -0.045em;
+    }
+    .status-pill {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 999px;
+      padding: 5px 8px;
+      white-space: nowrap;
+    }
+    .status-pill.fail { color: var(--bad); background: #f3dfdf; }
+    .status-pill.success { color: var(--good); background: #e0f1e6; }
+    .compare-body {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+    .replay-steps {
+      display: grid;
+      gap: 8px;
+    }
+    .replay-step {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      align-items: start;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px;
+      background: #fff;
+    }
+    .replay-step b {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: var(--ink);
+      color: white;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+    }
+    .replay-step strong { display: block; margin-bottom: 2px; }
+    .replay-step span { color: var(--muted); line-height: 1.35; }
+    .evidence-card, .quote-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: white;
+      padding: 12px;
+    }
+    .evidence-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--line);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+    }
+    .evidence-row:last-child { border-bottom: 0; }
+    .evidence-row span:first-child { color: var(--muted); }
+    .quote-card {
+      color: #303833;
+      line-height: 1.42;
+      font-style: italic;
     }
     .interactive-grid {
       display: grid;
@@ -807,8 +906,16 @@ DEMO_HTML = r"""<!doctype html>
       from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    @keyframes pulseDecoy {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+    @keyframes pulseCause {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
     @media (max-width: 980px) {
-      .interactive-grid, .chapter-grid, .workflow, .future-grid, .glossary-grid { grid-template-columns: 1fr; }
+      .interactive-grid, .chapter-grid, .workflow, .compare-grid, .future-grid, .glossary-grid { grid-template-columns: 1fr; }
       .plain-definition { grid-template-columns: 1fr; }
       .stack-row { grid-template-columns: 1fr; }
     }
@@ -856,11 +963,11 @@ DEMO_HTML = r"""<!doctype html>
         <div class="diagram-title">Toy transformer case</div>
         <div class="node-map">
           <div class="node">L0H2</div>
-          <div class="node decoy">L0H7</div>
+          <div class="node decoy" id="diagram-decoy">L0H7</div>
           <div class="node">L1H1</div>
           <div class="node">L1H4</div>
           <div class="node">L0H3</div>
-          <div class="node cause">L0H6</div>
+          <div class="node cause" id="diagram-cause">L0H6</div>
           <div class="node">L1H5</div>
           <div class="node">L1H7</div>
         </div>
@@ -886,6 +993,41 @@ DEMO_HTML = r"""<!doctype html>
         <div class="workflow-step"><strong>2. Intervene</strong><span>Turn candidates off with <a class="term" href="#glossary" data-tip="Ablation means disabling one component and checking whether the model behavior changes.">ablation</a> and measure the behavioral effect.</span></div>
         <div class="workflow-step"><strong>3. Compare</strong><span>Separate a correlated decoy from a causal component.</span></div>
         <div class="workflow-step"><strong>4. Submit</strong><span>Commit only after evidence supports the circuit.</span></div>
+      </div>
+    </section>
+
+    <section class="chapter" id="replay-compare">
+      <div class="chapter-kicker">The judge should see this first</div>
+      <h2>Same case. Two habits.</h2>
+      <p>
+        The naive baseline stops at the most suspicious-looking head. The causal agent keeps going:
+        it runs the intervention, compares effects, and submits the head that actually changed behavior.
+      </p>
+      <div class="compare-grid">
+        <div class="compare-card fail">
+          <div class="compare-head">
+            <h3>Naive baseline</h3>
+            <span class="status-pill fail">correlation trap</span>
+          </div>
+          <div class="compare-body">
+            <div class="replay-steps" id="baseline-steps"></div>
+            <div class="evidence-card" id="baseline-evidence"></div>
+            <div class="quote-card" id="baseline-quote">Loading baseline trace...</div>
+            <button class="warn" onclick="runBaseline()">Replay baseline in the live case</button>
+          </div>
+        </div>
+        <div class="compare-card success">
+          <div class="compare-head">
+            <h3>Causal agent</h3>
+            <span class="status-pill success">intervention wins</span>
+          </div>
+          <div class="compare-body">
+            <div class="replay-steps" id="protocol-steps"></div>
+            <div class="evidence-card" id="protocol-evidence"></div>
+            <div class="quote-card" id="protocol-quote">Loading causal trace...</div>
+            <button class="primary" onclick="runProtocol()">Replay causal agent in the live case</button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -970,6 +1112,7 @@ DEMO_HTML = r"""<!doctype html>
 
   <script>
     let state = null;
+    let comparison = { baseline: null, protocol: null };
 
     async function api(path, options = {}) {
       const response = await fetch(path, {
@@ -1046,11 +1189,13 @@ DEMO_HTML = r"""<!doctype html>
     async function runBaseline() {
       state = await api("/demo/baseline");
       render();
+      document.getElementById("case").scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     async function runProtocol() {
       state = await api("/demo/protocol");
       render();
+      document.getElementById("case").scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     async function loadResults() {
@@ -1058,10 +1203,20 @@ DEMO_HTML = r"""<!doctype html>
       renderResults(results);
     }
 
+    async function loadComparison() {
+      const [baseline, protocol] = await Promise.all([
+        api("/demo/baseline"),
+        api("/demo/protocol")
+      ]);
+      comparison = { baseline, protocol };
+      renderComparison();
+    }
+
     function render() {
       if (!state) return;
       renderStory();
       renderEvidenceBars();
+      renderCircuitMode(state.done ? (state.rubric.causal_success ? "success" : "baseline") : "idle");
       document.getElementById("next-hint").innerHTML =
         state.done
           ? `<span class="chip ${state.rubric.causal_success ? "good" : "bad"}">${state.rubric.causal_success ? "The agent found the cause." : "The agent guessed the decoy."}</span>`
@@ -1116,6 +1271,87 @@ DEMO_HTML = r"""<!doctype html>
 
       document.getElementById("ground-truth").textContent =
         state.done ? `Ground truth revealed after submit: ${state.ground_truth_heads.join(", ")}` : "";
+    }
+
+    function renderCircuitMode(mode) {
+      const decoy = document.getElementById("diagram-decoy");
+      const cause = document.getElementById("diagram-cause");
+      if (!decoy || !cause) return;
+      decoy.classList.toggle("active-decoy", mode === "baseline");
+      cause.classList.toggle("active-cause", mode === "success");
+    }
+
+    function renderComparison() {
+      renderReplay("baseline", comparison.baseline);
+      renderReplay("protocol", comparison.protocol);
+    }
+
+    function renderReplay(prefix, trace) {
+      if (!trace) return;
+      const summary = summarizeTrace(trace);
+      document.getElementById(`${prefix}-steps`).innerHTML = replaySteps(prefix, summary).map((step, index) => `
+        <div class="replay-step">
+          <b>${index + 1}</b>
+          <div><strong>${step.title}</strong><span>${step.text}</span></div>
+        </div>
+      `).join("");
+      document.getElementById(`${prefix}-evidence`).innerHTML = evidenceRows(summary).map(([label, value]) => `
+        <div class="evidence-row"><span>${label}</span><strong>${value}</strong></div>
+      `).join("");
+      document.getElementById(`${prefix}-quote`).textContent = replayQuote(prefix, summary);
+    }
+
+    function summarizeTrace(trace) {
+      const candidates = trace.candidates || [];
+      const submitted = (trace.submitted_heads || []).join(", ") || "none";
+      const topScore = maxCandidate(candidates, "score");
+      const topEffect = maxCandidate(candidates, "behavior_delta");
+      const success = Boolean(trace.rubric && trace.rubric.causal_success);
+      return {
+        topScore: topScore ? topScore.head_id : "unknown",
+        topScoreValue: topScore && topScore.score !== null ? fmt(Number(topScore.score)) : "not inspected",
+        topEffect: topEffect ? topEffect.head_id : "not measured",
+        topEffectValue: topEffect && topEffect.behavior_delta !== null ? fmt(Number(topEffect.behavior_delta)) : "not measured",
+        submitted,
+        success
+      };
+    }
+
+    function maxCandidate(candidates, key) {
+      return candidates
+        .filter(candidate => candidate[key] !== null && candidate[key] !== undefined)
+        .sort((a, b) => Number(b[key]) - Number(a[key]))[0] || null;
+    }
+
+    function replaySteps(prefix, summary) {
+      if (prefix === "baseline") {
+        return [
+          { title: "Inspect", text: `${summary.topScore} has the highest suspicious-looking score.` },
+          { title: "Guess", text: `The baseline submits ${summary.submitted} without intervention evidence.` },
+          { title: "Fail", text: "The submitted head was correlated with the behavior, but not causal." }
+        ];
+      }
+      return [
+        { title: "Inspect", text: `${summary.topScore} looks tempting, but the agent does not stop there.` },
+        { title: "Intervene", text: `Ablation shows ${summary.topEffect} has the strongest effect.` },
+        { title: "Submit", text: `The agent submits ${summary.submitted} and passes the causal check.` }
+      ];
+    }
+
+    function evidenceRows(summary) {
+      return [
+        ["top score", `${summary.topScore} (${summary.topScoreValue})`],
+        ["largest effect", `${summary.topEffect} (${summary.topEffectValue})`],
+        ["submitted", summary.submitted],
+        ["verdict", summary.success ? "causal success" : "failed causal check"]
+      ];
+    }
+
+    function replayQuote(prefix, summary) {
+      if (prefix === "baseline") {
+        return `I inspected two heads. ${summary.topScore} looked best, so I submitted ${summary.submitted}. That failed: it was correlation, not cause.`;
+      }
+      return `I inspected two heads. I ablated both. ${summary.topEffect} changed behavior most, so I submitted ${summary.submitted}.`;
     }
 
     function renderStory() {
@@ -1229,6 +1465,7 @@ DEMO_HTML = r"""<!doctype html>
     }
 
     resetCase();
+    loadComparison();
     loadResults();
   </script>
 </body>

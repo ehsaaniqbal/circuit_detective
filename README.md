@@ -166,7 +166,7 @@ The planted-lite arena always ranks a decoy head highest in `inspect_induction_s
 Dominant tool sequence after training: `inspect_induction_scores → ablate_head → ablate_head → submit_circuit` (251/256 rollouts).
 
 ![Phase 2 before/after](assets/phase2_before_after.png)
-*Phase 2 canonical run on 256 eval rollouts. Causal success, submit rate, ablate rate, and F1 all clear 97%.*
+*Phase 2 canonical run on 256 eval rollouts. Left: zoomed bars (88–102%) make the GRPO contribution visible on top of the already-high SFT baseline (causal +2.8pp, submit +2.3pp, ablate +0.8pp, F1 +2.5pp). Right: slope chart of the same four metrics. All four clear 97% after training.*
 
 ![Phase 2 reward distribution](assets/phase2_reward_distribution.png)
 *Reward-bucket distribution across all 256 eval rollouts. After training, 250/256 rollouts land in the full-causal-credit bucket (+5.00), 5 hit the wrong-head penalty (−0.80), 1 hit the partial-credit bucket (+0.60).*
